@@ -1,10 +1,11 @@
 // Root build: declares plugin versions (applied per module by build-logic convention plugins)
+// NOTE: org.jetbrains.kotlin.android is intentionally absent — AGP 9 built-in Kotlin compiles Android
+// modules. `kotlin.jvm apply false` pins KGP 2.3.21 on the classpath for AGP to pick up.
 // and hosts the repository-wide static analysis task (detekt + formatting rules).
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.test) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.kotlin.compose) apply false
