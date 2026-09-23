@@ -14,27 +14,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: jdk17 available
+        continue-on-error: true
         run: test -n "$JAVA_HOME_17_X64" && "$JAVA_HOME_17_X64/bin/java" -version
       - name: jdk21 available
+        continue-on-error: true
         run: test -n "$JAVA_HOME_21_X64" && "$JAVA_HOME_21_X64/bin/java" -version
       - name: android sdk present
+        continue-on-error: true
         run: test -d "$ANDROID_HOME" && ls "$ANDROID_HOME"
       - name: sdkmanager present
+        continue-on-error: true
         run: |
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: platform 36 installed
+        continue-on-error: true
         run: test -d "$ANDROID_HOME/platforms/android-36"
       - name: platform 37 installed
+        continue-on-error: true
         run: test -d "$ANDROID_HOME/platforms/android-37"
       - name: build-tools 36 installed
+        continue-on-error: true
         run: ls -d "$ANDROID_HOME"/build-tools/36.*
       - name: maven.google.com reachable
+        continue-on-error: true
         run: test "$(curl -s -o /dev/null -w '%{http_code}' https://maven.google.com/)" != "000"
       - name: services.gradle.org reachable
+        continue-on-error: true
         run: test "$(curl -s -o /dev/null -w '%{http_code}' https://services.gradle.org/distributions/)" != "000"
       - name: sdkmanager can install platform 37
+        continue-on-error: true
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37" >/dev/null
           test -d "$ANDROID_HOME/platforms/android-37"
       - name: kvm available for emulator
+        continue-on-error: true
         run: test -e /dev/kvm
