@@ -53,8 +53,15 @@ jobs:
         run: .github/scripts/gradle.sh configure help
 
       - name: Detekt
+        id: detekt
         shell: bash
+        continue-on-error: true
         run: .github/scripts/gradle.sh detekt detekt
+
+      - name: Detekt summary
+        if: always()
+        shell: bash
+        run: python3 .github/scripts/detekt_summary.py build/reports/detekt/detekt.xml
 
       - name: Assemble debug
         shell: bash
@@ -75,6 +82,13 @@ jobs:
       - name: Assemble release (unsigned, R8)
         shell: bash
         run: .github/scripts/gradle.sh assemble-release assembleRelease
+
+      - name: Fail if detekt failed
+        if: steps.detekt.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::error title=detekt::detekt reported issues (see 'Detekt summary' annotations)"
+          exit 1
 
       - name: Summarise test results
         if: always()
