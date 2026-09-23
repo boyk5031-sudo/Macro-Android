@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+**/build/
+!build-logic/**/src/**/build/
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+local.properties
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing
+keystore.properties
+*.jks
+*.keystore
+!debug.keystore
+
+# Reports & outputs
+*.hprof
+/reports/
+/dist/

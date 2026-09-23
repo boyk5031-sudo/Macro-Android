@@ -1,0 +1,99 @@
+# detekt 1.23.8 configuration; builds upon the default config.
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 12
+    ignoreAnnotated: ['Composable', 'Inject']
+  LongMethod:
+    threshold: 80
+    ignoreAnnotated: ['Composable', 'Test']
+  TooManyFunctions:
+    thresholdInClasses: 25
+    thresholdInInterfaces: 25
+    thresholdInObjects: 25
+    thresholdInFiles: 30
+    ignorePrivate: true
+  CyclomaticComplexMethod:
+    threshold: 18
+  NestedBlockDepth:
+    threshold: 5
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+  MatchingDeclarationName:
+    active: false
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    maxLineLength: 120
+    excludeCommentStatements: true
+  ReturnCount:
+    max: 4
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview', 'PreviewLightDark']
+  WildcardImport:
+    active: true
+  ForbiddenComment:
+    active: false
+  UnusedParameter:
+    active: true
+  ThrowsCount:
+    max: 4
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  SwallowedException:
+    ignoredExceptionTypes: ['CancellationException']
+  InstanceOfCheckForException:
+    active: false
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  InjectDispatcher:
+    active: true
+    dispatcherNames: ['IO', 'Default', 'Unconfined']
+  SuspendFunWithFlowReturnType:
+    active: true
+
+formatting:
+  active: true
+  android: true
+  autoCorrect: true
+  MaximumLineLength:
+    maxLineLength: 120
+  TrailingCommaOnCallSite:
+    active: true
+    useTrailingCommaOnCallSite: true
+  TrailingCommaOnDeclarationSite:
+    active: true
+    useTrailingCommaOnDeclarationSite: true
+  Filename:
+    active: false
+  FunctionNaming:
+    active: false
+  PropertyName:
+    active: false
+  ArgumentListWrapping:
+    active: false
+  ParameterListWrapping:
+    active: false
+  Wrapping:
+    active: false
+  MultiLineIfElse:
+    active: false
+  NoUnusedImports:
+    active: true
