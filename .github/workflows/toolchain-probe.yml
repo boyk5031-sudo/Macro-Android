@@ -20,7 +20,8 @@ jobs:
       - name: android sdk present
         run: test -d "$ANDROID_HOME" && ls "$ANDROID_HOME"
       - name: sdkmanager present
-        run: "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: platform 36 installed
         run: test -d "$ANDROID_HOME/platforms/android-36"
       - name: platform 37 installed
@@ -32,6 +33,8 @@ jobs:
       - name: services.gradle.org reachable
         run: test "$(curl -s -o /dev/null -w '%{http_code}' https://services.gradle.org/distributions/)" != "000"
       - name: sdkmanager can install platform 37
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37" >/dev/null && test -d "$ANDROID_HOME/platforms/android-37"
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37" >/dev/null
+          test -d "$ANDROID_HOME/platforms/android-37"
       - name: kvm available for emulator
         run: test -e /dev/kvm
