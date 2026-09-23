@@ -1,0 +1,1195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://macroandroid.app/schema/macro-v1.schema.json",
+  "title": "Macro-Android export document, schema version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "exportedAt",
+    "appVersionCode",
+    "macros"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "exportedAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "appVersionCode": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "macros": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/$defs/macro"
+      }
+    },
+    "schedules": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/scheduleSpec"
+      }
+    }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration": {
+      "type": "string",
+      "pattern": "^PT(?:\\d+H)?(?:\\d+M)?(?:\\d+(?:\\.\\d+)?S)?$",
+      "minLength": 3
+    },
+    "packageName": {
+      "type": "string",
+      "maxLength": 255,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]{0,31}$"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    },
+    "macro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "steps",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "tags": {
+          "type": "array",
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/tag"
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "executionPolicy": {
+          "$ref": "#/$defs/executionPolicy"
+        },
+        "variables": {
+          "type": "object",
+          "maxProperties": 32,
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/variableValue"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/step"
+          }
+        },
+        "createdAt": {
+          "$ref": "#/$defs/instant"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/instant"
+        }
+      }
+    },
+    "executionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "totalTimeout": {
+          "$ref": "#/$defs/duration"
+        },
+        "defaultStepTimeout": {
+          "$ref": "#/$defs/duration"
+        },
+        "defaultRetry": {
+          "$ref": "#/$defs/retryPolicy"
+        },
+        "lockAcquireTimeout": {
+          "$ref": "#/$defs/duration"
+        },
+        "blockedTimeout": {
+          "$ref": "#/$defs/duration"
+        },
+        "allowConcurrentSelf": {
+          "type": "boolean"
+        },
+        "requiresConfirmationBeforeRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "retryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "backoff": {
+          "enum": [
+            "FIXED",
+            "EXPONENTIAL"
+          ]
+        },
+        "initialDelay": {
+          "$ref": "#/$defs/duration"
+        },
+        "maxDelay": {
+          "$ref": "#/$defs/duration"
+        },
+        "retryOn": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "VALIDATION",
+              "PERMISSION",
+              "PRECONDITION",
+              "TARGET_UI",
+              "TRANSIENT",
+              "POLICY",
+              "DATA",
+              "INTERNAL",
+              "CANCELLED"
+            ]
+          }
+        }
+      }
+    },
+    "secureValueRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "redacted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "variableValue": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "str"
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "int"
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "bool"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "secure"
+            },
+            "ref": {
+              "$ref": "#/$defs/secureValueRef"
+            }
+          },
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "textValue": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "literal"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "var"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "secure"
+            },
+            "ref": {
+              "$ref": "#/$defs/secureValueRef"
+            }
+          },
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "template"
+            },
+            "template": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "template"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "nodeSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "viewId"
+          ]
+        },
+        {
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "required": [
+            "contentDescription"
+          ]
+        },
+        {
+          "required": [
+            "className"
+          ]
+        }
+      ],
+      "properties": {
+        "viewId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "contentDescription": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "className": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "textMatch": {
+          "enum": [
+            "EQUALS",
+            "EQUALS_IGNORE_CASE",
+            "CONTAINS",
+            "REGEX"
+          ]
+        },
+        "packageName": {
+          "$ref": "#/$defs/packageName"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "clickableAncestor": {
+          "type": "boolean"
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "varEquals"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "value": {
+              "$ref": "#/$defs/variableValue"
+            }
+          },
+          "required": [
+            "name",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "varCompare"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "op": {
+              "enum": [
+                "LT",
+                "LE",
+                "EQ",
+                "NE",
+                "GE",
+                "GT"
+              ]
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "name",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "varContains"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "needle": {
+              "$ref": "#/$defs/textValue"
+            }
+          },
+          "required": [
+            "name",
+            "needle"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "nodeExists"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            }
+          },
+          "required": [
+            "selector"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "appInstalled"
+            },
+            "packageName": {
+              "$ref": "#/$defs/packageName"
+            }
+          },
+          "required": [
+            "packageName"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "not"
+            },
+            "inner": {
+              "$ref": "#/$defs/condition"
+            }
+          },
+          "required": [
+            "inner"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "all"
+            },
+            "conditions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          },
+          "required": [
+            "conditions"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "any"
+            },
+            "conditions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          },
+          "required": [
+            "conditions"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "failureBehavior": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "abort"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "continue"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "jump"
+            },
+            "label": {
+              "$ref": "#/$defs/label"
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "action": {
+          "$ref": "#/$defs/action"
+        },
+        "timeout": {
+          "$ref": "#/$defs/duration"
+        },
+        "retry": {
+          "$ref": "#/$defs/retryPolicy"
+        },
+        "onFailure": {
+          "$ref": "#/$defs/failureBehavior"
+        },
+        "continueOnCancel": {
+          "const": false
+        }
+      }
+    },
+    "stepList": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/step"
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "launchApp"
+            },
+            "packageName": {
+              "$ref": "#/$defs/packageName"
+            },
+            "waitForWindow": {
+              "type": "boolean"
+            },
+            "windowWait": {
+              "$ref": "#/$defs/duration"
+            }
+          },
+          "required": [
+            "packageName"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "openUrl"
+            },
+            "url": {
+              "$ref": "#/$defs/textValue",
+              "description": "Resolved value must be an http/https URL of at most 2048 characters. Literal values are checked statically here; var/template/secure values are checked at runtime (VALIDATION.URL_SCHEME).",
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "literal"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "pattern": "^https?://",
+                    "maxLength": 2048
+                  }
+                }
+              }
+            },
+            "preferPackage": {
+              "$ref": "#/$defs/packageName"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "wait"
+            },
+            "duration": {
+              "$ref": "#/$defs/duration"
+            }
+          },
+          "required": [
+            "duration"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "globalAction"
+            },
+            "action": {
+              "enum": [
+                "BACK",
+                "HOME",
+                "RECENTS",
+                "NOTIFICATIONS",
+                "QUICK_SETTINGS"
+              ]
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "clickNode"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            },
+            "longClick": {
+              "type": "boolean"
+            },
+            "requireVisible": {
+              "const": true
+            }
+          },
+          "required": [
+            "selector"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "scrollNode"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            },
+            "direction": {
+              "enum": [
+                "FORWARD",
+                "BACKWARD"
+              ]
+            },
+            "times": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "direction"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "enterText"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            },
+            "text": {
+              "$ref": "#/$defs/textValue"
+            },
+            "sensitive": {
+              "type": "boolean"
+            },
+            "append": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "waitForNode"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            },
+            "state": {
+              "enum": [
+                "PRESENT",
+                "ABSENT"
+              ]
+            }
+          },
+          "required": [
+            "selector",
+            "state"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "sendNotification"
+            },
+            "title": {
+              "$ref": "#/$defs/textValue"
+            },
+            "text": {
+              "$ref": "#/$defs/textValue"
+            },
+            "tapOpensMacro": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "title",
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "setVariable"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "value": {
+              "$ref": "#/$defs/variableValue"
+            },
+            "expression": {
+              "$ref": "#/$defs/expression"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "oneOf": [
+            {
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "required": [
+                "expression"
+              ]
+            }
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "if"
+            },
+            "condition": {
+              "$ref": "#/$defs/condition"
+            },
+            "then": {
+              "$ref": "#/$defs/stepList"
+            },
+            "else": {
+              "$ref": "#/$defs/stepList"
+            }
+          },
+          "required": [
+            "condition",
+            "then"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "repeat"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "whileCondition": {
+              "$ref": "#/$defs/condition"
+            },
+            "maxIterations": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "body": {
+              "$ref": "#/$defs/stepList"
+            },
+            "delayBetween": {
+              "$ref": "#/$defs/duration"
+            }
+          },
+          "required": [
+            "body"
+          ],
+          "oneOf": [
+            {
+              "required": [
+                "count"
+              ]
+            },
+            {
+              "required": [
+                "whileCondition",
+                "maxIterations"
+              ]
+            }
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "parallel"
+            },
+            "children": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/step"
+              }
+            },
+            "failFast": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "children"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "log"
+            },
+            "level": {
+              "enum": [
+                "INFO",
+                "WARN"
+              ]
+            },
+            "message": {
+              "$ref": "#/$defs/textValue"
+            }
+          },
+          "required": [
+            "level",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "stop"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "expression": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "increment"
+            },
+            "by": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "concat"
+            },
+            "parts": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/$defs/textValue"
+              }
+            }
+          },
+          "required": [
+            "parts"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "now"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "nodeText"
+            },
+            "selector": {
+              "$ref": "#/$defs/nodeSelector"
+            }
+          },
+          "required": [
+            "selector"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "scheduleSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macroId",
+        "kind"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "macroId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "zoneId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "kind": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "oneOf": [
+            {
+              "properties": {
+                "type": {
+                  "const": "oneTime"
+                },
+                "at": {
+                  "$ref": "#/$defs/instant"
+                }
+              },
+              "required": [
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "interval"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": 15,
+                  "maximum": 10080
+                }
+              },
+              "required": [
+                "minutes"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "daily"
+                },
+                "localTime": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "daysOfWeek": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 7,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "MONDAY",
+                      "TUESDAY",
+                      "WEDNESDAY",
+                      "THURSDAY",
+                      "FRIDAY",
+                      "SATURDAY",
+                      "SUNDAY"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "localTime",
+                "daysOfWeek"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "requiresCharging": {
+          "type": "boolean"
+        },
+        "requiresBatteryNotLow": {
+          "type": "boolean"
+        },
+        "requiresDeviceIdle": {
+          "type": "boolean"
+        },
+        "missedRunPolicy": {
+          "enum": [
+            "RUN_LATE",
+            "SKIP",
+            "RUN_ONCE_COALESCED"
+          ]
+        },
+        "lateThreshold": {
+          "$ref": "#/$defs/duration"
+        }
+      }
+    }
+  }
+}

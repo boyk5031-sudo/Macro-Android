@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-09-23T10:15:30Z",
+  "appVersionCode": 1,
+  "macros": [
+    {
+      "id": "6f1d3a2e-2c7b-4a4e-9a55-2f0c1f4f5a10",
+      "revision": 3,
+      "name": "Open Wi-Fi settings",
+      "description": "Launches Settings and taps Network & internet.",
+      "profile": "General",
+      "tags": ["settings"],
+      "enabled": true,
+      "executionPolicy": { "totalTimeout": "PT5M" },
+      "variables": { "attempts": { "type": "int", "value": 0 } },
+      "steps": [
+        { "id": "0a0a0a0a-0000-4000-8000-000000000001",
+          "action": { "type": "launchApp", "packageName": "com.android.settings" } },
+        { "id": "0a0a0a0a-0000-4000-8000-000000000002",
+          "action": { "type": "waitForNode",
+                      "selector": { "text": "Network & internet", "textMatch": "CONTAINS" },
+                      "state": "PRESENT" },
+          "timeout": "PT8S", "retry": { "maxAttempts": 2, "backoff": "EXPONENTIAL" } },
+        { "id": "0a0a0a0a-0000-4000-8000-000000000003",
+          "action": { "type": "clickNode",
+                      "selector": { "text": "Network & internet", "textMatch": "CONTAINS" } },
+          "onFailure": { "type": "jump", "label": "fallback" } },
+        { "id": "0a0a0a0a-0000-4000-8000-000000000004",
+          "action": { "type": "if",
+                      "condition": { "type": "nodeExists", "selector": { "viewId": "com.android.settings:id/search" } },
+                      "then": [ { "id": "0a0a0a0a-0000-4000-8000-000000000005",
+                                  "action": { "type": "log", "level": "INFO",
+                                              "message": { "type": "literal", "text": "Search available" } } } ] } },
+        { "id": "0a0a0a0a-0000-4000-8000-000000000006",
+          "action": { "type": "parallel", "children": [
+              { "id": "0a0a0a0a-0000-4000-8000-000000000007", "action": { "type": "wait", "duration": "PT1S" } },
+              { "id": "0a0a0a0a-0000-4000-8000-000000000008",
+                "action": { "type": "sendNotification",
+                            "title": { "type": "literal", "text": "Done" },
+                            "text": { "type": "template", "template": "Finished after {{attempts}} attempts" } } }
+          ] } },
+        { "id": "0a0a0a0a-0000-4000-8000-000000000009", "action": { "type": "stop", "success": true } },
+        { "id": "0a0a0a0a-0000-4000-8000-00000000000a", "label": "fallback",
+          "action": { "type": "log", "level": "WARN", "message": { "type": "literal", "text": "Menu not found" } } }
+      ],
+      "createdAt": "2026-09-20T08:00:00Z",
+      "updatedAt": "2026-09-23T10:00:00Z"
+    }
+  ],
+  "schedules": [
+    { "id": "5c5c5c5c-0000-4000-8000-000000000001",
+      "macroId": "6f1d3a2e-2c7b-4a4e-9a55-2f0c1f4f5a10",
+      "enabled": true, "zoneId": "Asia/Kolkata",
+      "kind": { "type": "daily", "localTime": "07:30", "daysOfWeek": ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"] },
+      "requiresBatteryNotLow": true, "missedRunPolicy": "RUN_LATE", "lateThreshold": "PT30M" }
+  ]
+}
