@@ -1,5 +1,6 @@
 # Phase 0 feasibility probe: verifies that GitHub Actions can serve as the
-# Android build/verification environment for this repository.
+# Android build/verification environment for this repository. Each fact is a
+# separate step so that its conclusion is readable via the Jobs API.
 # Replaced by the real CI pipeline in Phase 2.
 name: toolchain-probe
 on:
@@ -12,12 +13,25 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Report available toolchain
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME"; java -version 2>&1
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms" 2>/dev/null || echo "no platforms dir"
-          ls "$ANDROID_HOME/build-tools" 2>/dev/null || echo "no build-tools dir"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version 2>/dev/null || echo "no sdkmanager"
-          curl -s -o /dev/null -w "maven.google.com:%{http_code}\n" https://maven.google.com/
-          curl -s -o /dev/null -w "services.gradle.org:%{http_code}\n" https://services.gradle.org/distributions/
+      - name: jdk17 available
+        run: test -n "$JAVA_HOME_17_X64" && "$JAVA_HOME_17_X64/bin/java" -version
+      - name: jdk21 available
+        run: test -n "$JAVA_HOME_21_X64" && "$JAVA_HOME_21_X64/bin/java" -version
+      - name: android sdk present
+        run: test -d "$ANDROID_HOME" && ls "$ANDROID_HOME"
+      - name: sdkmanager present
+        run: "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+      - name: platform 36 installed
+        run: test -d "$ANDROID_HOME/platforms/android-36"
+      - name: platform 37 installed
+        run: test -d "$ANDROID_HOME/platforms/android-37"
+      - name: build-tools 36 installed
+        run: ls -d "$ANDROID_HOME"/build-tools/36.*
+      - name: maven.google.com reachable
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' https://maven.google.com/)" != "000"
+      - name: services.gradle.org reachable
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' https://services.gradle.org/distributions/)" != "000"
+      - name: sdkmanager can install platform 37
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37" >/dev/null && test -d "$ANDROID_HOME/platforms/android-37"
+      - name: kvm available for emulator
+        run: test -e /dev/kvm
