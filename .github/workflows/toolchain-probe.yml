@@ -1,0 +1,23 @@
+# Phase 0 feasibility probe: verifies that GitHub Actions can serve as the
+# Android build/verification environment for this repository.
+# Replaced by the real CI pipeline in Phase 2.
+name: toolchain-probe
+on:
+  push:
+    branches: ["arena/**"]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report available toolchain
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"; java -version 2>&1
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" 2>/dev/null || echo "no platforms dir"
+          ls "$ANDROID_HOME/build-tools" 2>/dev/null || echo "no build-tools dir"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version 2>/dev/null || echo "no sdkmanager"
+          curl -s -o /dev/null -w "maven.google.com:%{http_code}\n" https://maven.google.com/
+          curl -s -o /dev/null -w "services.gradle.org:%{http_code}\n" https://services.gradle.org/distributions/
