@@ -16,25 +16,25 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
     commonExtension.apply {
         compileSdk = Sdk.COMPILE
 
-        defaultConfig {
+        defaultConfig.apply {
             minSdk = Sdk.MIN
             testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
 
-        compileOptions {
+        compileOptions.apply {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }
 
-        testOptions {
+        testOptions.apply {
             animationsDisabled = true
-            unitTests {
+            unitTests.apply {
                 isIncludeAndroidResources = true
                 isReturnDefaultValues = false
             }
         }
 
-        lint {
+        lint.apply {
             abortOnError = true
             warningsAsErrors = true
             checkReleaseBuilds = true

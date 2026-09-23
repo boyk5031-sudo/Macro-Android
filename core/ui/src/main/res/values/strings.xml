@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Generic actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_save">Save</string>
+    <string name="action_back">Back</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="action_learn_more">Learn more</string>
+    <string name="action_dismiss">Dismiss</string>
+
+    <!-- Error titles (ErrorCode → text) -->
+    <string name="err_name_invalid">The name is empty, too long, or contains unsupported characters.</string>
+    <string name="err_name_duplicate">A macro with this name already exists.</string>
+    <string name="err_no_steps">Add at least one step.</string>
+    <string name="err_limit_exceeded">This exceeds a size limit.</string>
+    <string name="err_parallel_ui">Screen-interaction steps can’t run in parallel.</string>
+    <string name="err_package_invalid">That isn’t a valid package name.</string>
+    <string name="err_url_scheme">Only http, https, mailto, tel, geo and content links are allowed.</string>
+    <string name="err_jump">A “jump to” target is missing, duplicated, or points backwards.</string>
+    <string name="err_sensitive">This value must be marked sensitive.</string>
+    <string name="err_secure_redacted">A sensitive value was removed on export and must be re-entered.</string>
+    <string name="err_import_parse">This file isn’t a valid macro export.</string>
+    <string name="err_schema_too_new">This file was created by a newer version of the app.</string>
+    <string name="err_not_apk">This file isn’t a readable APK.</string>
+    <string name="err_notifications_denied">Notifications are turned off; runs can’t be shown.</string>
+    <string name="err_a11y_not_enabled">The accessibility service isn’t enabled.</string>
+    <string name="err_a11y_consent">Screen-interaction steps need your consent first.</string>
+    <string name="err_uri_revoked">Access to this file was revoked. Pick it again.</string>
+    <string name="err_shortcut_unsupported">Your launcher doesn’t support pinned shortcuts.</string>
+    <string name="err_foreground_required">Open the app and try again.</string>
+    <string name="err_screen_off">The screen is off.</string>
+    <string name="err_screen_locked">The device is locked.</string>
+    <string name="err_ui_busy">Another macro is using the screen.</string>
+    <string name="err_blocked_timeout">Waited too long for the device to become ready.</string>
+    <string name="err_window_changed">The target app is no longer in front.</string>
+    <string name="err_node_not_found">The element wasn’t found on screen.</string>
+    <string name="err_node_action">The element didn’t accept the action.</string>
+    <string name="err_node_password">Password fields are never automated.</string>
+    <string name="err_node_ambiguous">More than one element matched.</string>
+    <string name="err_launch_failed">The app couldn’t be opened.</string>
+    <string name="err_app_not_installed">The app isn’t installed.</string>
+    <string name="err_step_timeout">The step timed out.</string>
+    <string name="err_macro_timeout">The macro ran out of time.</string>
+    <string name="err_io">A file couldn’t be read or written.</string>
+    <string name="err_queue_timeout">The run waited in the queue too long.</string>
+    <string name="err_rate_limited">Too many runs in a short time.</string>
+    <string name="err_queue_full">The run queue is full.</string>
+    <string name="err_macro_disabled">This macro is disabled.</string>
+    <string name="err_already_running">This macro is already running.</string>
+    <string name="err_stopped_by_macro">Stopped by a Stop step.</string>
+    <string name="err_missed">The scheduled time was missed.</string>
+    <string name="err_duplicate">This item already exists.</string>
+    <string name="err_db">A storage error occurred.</string>
+    <string name="err_secure_unavailable">Sensitive values are unavailable right now.</string>
+    <string name="err_key_invalidated">Sensitive values were invalidated by a lock-screen change and must be re-entered.</string>
+    <string name="err_checksum">The file’s checksum doesn’t match.</string>
+    <string name="err_not_found">This item no longer exists.</string>
+    <string name="err_cancelled_user">Cancelled.</string>
+    <string name="err_interrupted">Interrupted by a restart.</string>
+    <string name="err_validation_generic">Check the highlighted fields.</string>
+    <string name="err_permission_generic">A permission is missing.</string>
+    <string name="err_precondition_generic">The device isn’t ready.</string>
+    <string name="err_target_generic">The target app didn’t respond as expected.</string>
+    <string name="err_transient_generic">A temporary problem occurred.</string>
+    <string name="err_policy_generic">Blocked by a safety limit.</string>
+    <string name="err_data_generic">A data error occurred.</string>
+    <string name="err_internal_generic">Something went wrong.</string>
+</resources>
