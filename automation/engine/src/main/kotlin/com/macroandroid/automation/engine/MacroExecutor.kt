@@ -174,10 +174,12 @@ class MacroExecutor(
 
     private fun policyRejection(macro: Macro, request: RunRequest, now: Instant): ErrorCode? {
         if (!macro.enabled && request.origin !is ExecutionOrigin.StepTest) return ErrorCode.MACRO_DISABLED
-        if (active.size >= config.queueCapacity) return ErrorCode.QUEUE_FULL
+        // The more specific rejection wins: re-running an already active macro is reported as such even when the
+        // queue happens to be full.
         if (!macro.executionPolicy.allowConcurrentSelf && active.values.any { it.macroId == macro.id }) {
             return ErrorCode.CONCURRENT_SELF_NOT_ALLOWED
         }
+        if (active.size >= config.queueCapacity) return ErrorCode.QUEUE_FULL
         val windowStart = now - 1.minutes
         while (recentStarts.isNotEmpty() && recentStarts.first().first < windowStart) recentStarts.removeFirst()
         if (recentStarts.size >= config.globalStartsPerMinute) return ErrorCode.RATE_LIMITED

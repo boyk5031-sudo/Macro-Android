@@ -112,8 +112,12 @@ jobs:
                   tests += int(s.get('tests', 0)); fails += int(s.get('failures', 0))
                   errs += int(s.get('errors', 0)); skips += int(s.get('skipped', 0))
                   for tc in s.findall('testcase'):
-                      if tc.find('failure') is not None or tc.find('error') is not None:
-                          failed.append(f"{tc.get('classname')}.{tc.get('name')}")
+                      node = tc.find('failure') if tc.find('failure') is not None else tc.find('error')
+                      if node is not None:
+                          msg = (node.get('message') or (node.text or '').strip().splitlines()[0:1] or [''])
+                          msg = msg if isinstance(msg, str) else (msg[0] if msg else '')
+                          msg = ' '.join(msg.split())[:600]
+                          failed.append(f"{tc.get('classname')}.{tc.get('name')} :: {msg}")
           print(f"::notice title=unit-tests::total={tests} failures={fails} errors={errs} skipped={skips}")
           for name in failed[:50]:
               print(f"::error title=test-failed::{name}")

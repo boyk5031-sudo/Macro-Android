@@ -52,7 +52,7 @@ class NextRunCalculatorTest {
     fun `daily across DST change keeps local wall time`() {
         // Europe/Berlin leaves DST on 2026-10-25.
         val s = spec(ScheduleKind.Daily(LocalTime(8, 0), DayOfWeek.entries.toSet()))
-        val before = Instant.parse("2026-10-24T09:00:00Z")
+        val before = Instant.parse("2026-10-24T05:00:00Z") // 07:00 CEST, before the 08:00 slot
         val first = NextRunCalculator.next(s, before)!!
         val second = NextRunCalculator.next(s, first)!!
         assertThat(second - first).isEqualTo(25.hours)

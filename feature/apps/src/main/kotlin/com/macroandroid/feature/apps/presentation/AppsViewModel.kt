@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.Collator
 import javax.inject.Inject
 
 sealed interface AppsUiState {
@@ -134,7 +135,10 @@ class AppsViewModel @Inject constructor(
     }
 
     private fun comparator(sort: AppsSortOrder): Comparator<InstalledApp> {
-        val byLabel = Comparator<InstalledApp> { a, b -> String.CASE_INSENSITIVE_ORDER.compare(a.label, b.label) }
+        // Locale-aware: "Álpha" sorts with the As, not after "Z" as code-point order would (FR-APP-1). Collator is not
+        // thread-safe, so a fresh instance is created per comparator.
+        val collator = Collator.getInstance().apply { strength = Collator.SECONDARY }
+        val byLabel = Comparator<InstalledApp> { a, b -> collator.compare(a.label, b.label) }
         return when (sort) {
             AppsSortOrder.LABEL -> byLabel
             AppsSortOrder.RECENTLY_INSTALLED -> compareByDescending<InstalledApp> { it.firstInstalledAt }.then(byLabel)

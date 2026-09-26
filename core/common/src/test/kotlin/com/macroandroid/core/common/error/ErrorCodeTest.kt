@@ -1,6 +1,7 @@
 package com.macroandroid.core.common.error
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 class ErrorCodeTest {
@@ -23,7 +24,7 @@ class ErrorCodeTest {
             ErrorCode.APP_NOT_INSTALLED,
             ErrorCode.MACRO_TIMEOUT,
             ErrorCode.QUEUE_TIMEOUT,
-        ).forEach { assertThat(it.retryable).named(it.name).isFalse() }
+        ).forEach { assertWithMessage(it.name).that(it.retryable).isFalse() }
     }
 
     @Test
