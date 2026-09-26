@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Fires one planned occurrence (doc 08 §3–4). The macro itself runs in the application-scoped [MacroRunner]; the
+ * Fires one planned occurrence (ADR-0005). The macro itself runs in the application-scoped [MacroRunner]; the
  * worker keeps the process alive while it waits (bounded by [AWAIT_MAX], below WorkManager's 10-minute limit) and
  * then plans the next occurrence. If WorkManager stops the worker, the execution is cancelled explicitly so the
  * history never shows a phantom "running" row.

@@ -44,7 +44,7 @@ class MacroApplication : Application(), Configuration.Provider {
     }
 
     /**
-     * Doc 07 §7 / doc 08 §3: mark orphaned executions, re-plan schedules, apply retention, refresh dynamic shortcuts.
+     * Doc 07 §7 / ADR-0005: mark orphaned executions, re-plan schedules, apply retention, refresh dynamic shortcuts.
      * Nothing here starts a macro.
      */
     private suspend fun startupHousekeeping() {

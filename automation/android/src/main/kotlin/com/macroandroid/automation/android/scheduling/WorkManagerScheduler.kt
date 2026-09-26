@@ -23,7 +23,7 @@ import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
- * Plans schedules as unique one-time WorkManager requests (`schedule:<id>`, doc 08 §3). One-time requests with an
+ * Plans schedules as unique one-time WorkManager requests (`schedule:<id>`, ADR-0005). One-time requests with an
  * initial delay are used for every kind (including intervals) so "daily at 07:30" and DST are computed by
  * [NextRunCalculator] rather than approximated by PeriodicWorkRequest's flex windows.
  */

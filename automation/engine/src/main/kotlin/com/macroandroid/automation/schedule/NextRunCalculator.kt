@@ -14,7 +14,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
-/** What to do when a planned occurrence is discovered after it should have fired (doc 08 §4). */
+/** What to do when a planned occurrence is discovered after it should have fired (ADR-0005). */
 enum class MissedDecision { RUN_NOW, SKIP }
 
 /** Pure schedule arithmetic shared by the planner (automation:android) and the editor (feature:scheduling). */
