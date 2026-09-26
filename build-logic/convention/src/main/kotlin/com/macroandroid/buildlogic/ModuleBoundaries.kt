@@ -67,7 +67,8 @@ abstract class CheckModuleBoundariesTask : DefaultTask() {
             from == ":app" -> true
             from == ":core:common" -> false
             from == ":core:security" || from == ":core:datastore" || from == ":core:ui" -> to == ":core:common"
-            from == ":core:database" -> to == ":core:common" || to == ":core:security"
+            // core:database hosts the Room-backed repositories, so it maps entities <-> engine model.
+            from == ":core:database" -> to == ":core:common" || to == ":core:security" || to == ":automation:engine"
             from == ":core:testing" -> to.startsWith(":core:") || to == ":automation:engine"
             from == ":automation:engine" -> to == ":core:common"
             from == ":automation:android" ->

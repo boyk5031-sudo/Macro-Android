@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Execution progress / blocked-run prompts (runtime permission on 33+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Long macro runs continue while the user watches another app (doc 06 §1). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <queries>
+        <!-- Installed-apps list and LaunchApp resolution (API 30+ package visibility). -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- OpenUrl: know whether a browser exists for a friendlier error. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
+    <application>
+        <!--
+          User-authored, deterministic UI automation only. Bound solely while the user has enabled it in
+          system settings AND granted in-app consent (ADR-0008). Not an accessibility tool
+          (isAccessibilityTool deliberately absent).
+        -->
+        <service
+            android:name=".accessibility.MacroAccessibilityService"
+            android:exported="true"
+            android:label="@string/automation_android_a11y_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/automation_android_accessibility_service_config" />
+        </service>
+
+        <service
+            android:name=".service.ExecutionForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_initiated_macro_execution" />
+        </service>
+        <receiver
+            android:name=".service.ExecutionControlReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

@@ -399,7 +399,10 @@ class MacroExecutor(
                     gateOrBlock(step.action.needsAccessibility)?.let { return it }
                     if (!lockHeld) {
                         val got = withTimeoutOrNull(macro.executionPolicy.lockAcquireTimeout) { uiLock.lock(); true } ?: false
-                        if (!got) return blockedOutcome(BlockedReason(ErrorCode.UI_LOCK_TIMEOUT))
+                        if (!got) {
+                            blockedOutcome(BlockedReason(ErrorCode.UI_LOCK_TIMEOUT))?.let { return it }
+                            continue // gate passed again: retry lock acquisition for the same attempt
+                        }
                         lockHeld = true
                     }
                 } else if (lockHeld) {

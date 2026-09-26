@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="automation_android_a11y_service_label">Macro Android automation</string>
+    <string name="automation_android_a11y_service_summary">Performs taps, scrolling and text entry that you defined in your own macros, only while a macro you started is running.</string>
+    <string name="automation_android_a11y_service_description">Macro Android uses the accessibility service to perform the exact steps you wrote in a macro (tap a button, scroll a list, type text) inside the apps you chose. It reads screen content only to locate those elements while one of your macros is running. It never records your screen, never reads password fields, never acts on its own, and sends nothing off the device. You can revoke this at any time in Settings → Accessibility or in the app’s Permission center.</string>
+    <string name="automation_android_channel_progress">Macro progress</string>
+    <string name="automation_android_channel_attention">Needs your attention</string>
+    <string name="automation_android_channel_results">Macro results</string>
+    <string name="automation_android_notification_running">Running “%1$s”</string>
+    <string name="automation_android_notification_step">Step %1$d of %2$d</string>
+    <string name="automation_android_notification_blocked_title">“%1$s” is waiting</string>
+    <string name="automation_android_notification_blocked_text">Tap to continue when the device is ready.</string>
+    <string name="automation_android_notification_cancel">Cancel</string>
+    <string name="automation_android_notification_pause">Pause</string>
+    <string name="automation_android_notification_resume">Resume</string>
+    <string name="automation_android_fgs_title">Macro Android is running macros</string>
+    <string name="automation_android_fgs_text">%1$d active</string>
+</resources>

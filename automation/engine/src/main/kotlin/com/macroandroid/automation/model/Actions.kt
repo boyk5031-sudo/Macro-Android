@@ -61,7 +61,7 @@ sealed interface ActionParameters {
     val defaultTimeout: Duration
 
     /** Direct child step lists for container actions (used by validator and executor). */
-    val children: List<List<MacroStep>> get() = emptyList()
+    val childGroups: List<List<MacroStep>> get() = emptyList()
 
     @Serializable
     @SerialName("launchApp")
@@ -193,7 +193,7 @@ sealed interface ActionParameters {
         override val needsAccessibility
             get() = condition.needsAccessibility || (then + `else`).any { it.action.needsAccessibility }
         override val defaultTimeout get() = Duration.ZERO
-        override val children get() = listOf(then, `else`)
+        override val childGroups get() = listOf(then, `else`)
     }
 
     @Serializable
@@ -212,7 +212,7 @@ sealed interface ActionParameters {
         override val needsAccessibility
             get() = whileCondition?.needsAccessibility == true || body.any { it.action.needsAccessibility }
         override val defaultTimeout get() = Duration.ZERO
-        override val children get() = listOf(body)
+        override val childGroups get() = listOf(body)
 
         /** Upper bound of iterations for the static leaf-count check. */
         val iterationBound: Int get() = count ?: maxIterations ?: 0
@@ -227,9 +227,7 @@ sealed interface ActionParameters {
         override val concurrencyClass get() = ConcurrencyClass.BACKGROUND_SAFE
         override val needsAccessibility get() = children.any { it.action.needsAccessibility }
         override val defaultTimeout get() = Duration.ZERO
-        // Named `children` in JSON; expose through the container API as a single group.
-        @Suppress("PropertyName")
-        val childGroups: List<List<MacroStep>> get() = listOf(children)
+        override val childGroups get() = listOf(children)
     }
 
     @Serializable
@@ -256,12 +254,6 @@ sealed interface ActionParameters {
 
     /** True for `if`/`repeat`/`parallel`. */
     val isContainer: Boolean get() = this is If || this is Repeat || this is Parallel
-}
-
-/** Child step groups of any container action. */
-fun ActionParameters.childGroups(): List<List<MacroStep>> = when (this) {
-    is ActionParameters.Parallel -> childGroups
-    else -> children
 }
 
 /** Stable wire name of the action type (the `type` discriminator). */

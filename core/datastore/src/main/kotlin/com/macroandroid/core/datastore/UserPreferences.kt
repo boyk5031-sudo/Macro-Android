@@ -26,7 +26,7 @@ data class UserPreferences(
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-enum class AppsSort { NAME, RECENT_UPDATE, INSTALL_DATE, PACKAGE }
+enum class AppsSort { NAME, RECENT_UPDATE, INSTALL_DATE, FAVORITES_FIRST }
 
 /** The disclosure text version the user must have accepted; bump when the disclosure changes. */
 const val CURRENT_A11Y_DISCLOSURE_VERSION = 1

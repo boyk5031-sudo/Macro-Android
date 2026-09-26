@@ -17,6 +17,7 @@ android {
 
 dependencies {
     api(projects.core.common)
+    api(projects.automation.engine)
     implementation(projects.core.security)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)

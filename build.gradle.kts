@@ -43,7 +43,7 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     reports {
         html.required.set(true)
         sarif.required.set(true)
-        xml.required.set(false)
+        xml.required.set(true)
         txt.required.set(false)
         md.required.set(false)
     }

@@ -4,8 +4,11 @@ import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
@@ -47,6 +50,7 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
     }
 
     configureKotlin<KotlinAndroidProjectExtension>()
+    configureTestTasks()
 
     dependencies {
         "testImplementation"(libs.findLibrary("junit4").get())
@@ -68,12 +72,26 @@ internal fun Project.configureKotlinJvm() {
         targetCompatibility = JavaVersion.VERSION_17
     }
     configureKotlin<KotlinJvmProjectExtension>()
+    configureTestTasks()
 
     dependencies {
         "testImplementation"(libs.findLibrary("junit4").get())
         "testImplementation"(libs.findLibrary("kotlinx-coroutines-test").get())
         "testImplementation"(libs.findLibrary("truth").get())
         "testImplementation"(libs.findLibrary("turbine").get())
+    }
+}
+
+/** Gradle 9 fails `Test` tasks that discover no tests; modules whose coverage is androidTest-only must not fail. */
+private fun Project.configureTestTasks() {
+    tasks.withType<Test>().configureEach {
+        failOnNoDiscoveredTests.set(false)
+        testLogging {
+            events("failed")
+            exceptionFormat = TestExceptionFormat.FULL
+            showStackTraces = true
+        }
+        maxHeapSize = "1g"
     }
 }
 

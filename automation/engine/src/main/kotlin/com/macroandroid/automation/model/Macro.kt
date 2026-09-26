@@ -128,7 +128,7 @@ data class Macro(
         private fun collect(steps: List<MacroStep>, into: MutableList<MacroStep>) {
             steps.forEach { s ->
                 into += s
-                s.action.childGroups().forEach { collect(it, into) }
+                s.action.childGroups.forEach { collect(it, into) }
             }
         }
 
@@ -142,7 +142,7 @@ data class Macro(
         }
 
         private fun depthOf(steps: List<MacroStep>, current: Int): Int = steps.maxOfOrNull { s ->
-            val groups = s.action.childGroups()
+            val groups = s.action.childGroups
             if (groups.isEmpty()) current else groups.maxOf { depthOf(it, current + 1) }
         } ?: current
     }
