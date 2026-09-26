@@ -67,7 +67,10 @@
     <string name="perm_open_a11y_settings">Open Accessibility settings</string>
     <string name="perm_withdraw">Withdraw consent</string>
     <string name="perm_withdraw_title">Withdraw accessibility consent?</string>
-    <string name="perm_withdraw_body">%1$d macro(s) with accessibility steps will be disabled. Turn the service off in Accessibility settings afterwards; the app cannot do that for you.</string>
+    <plurals name="perm_withdraw_body">
+        <item quantity="one">%1$d macro with accessibility steps will be disabled. Turn the service off in Accessibility settings afterwards; the app cannot do that for you.</item>
+        <item quantity="other">%1$d macros with accessibility steps will be disabled. Turn the service off in Accessibility settings afterwards; the app cannot do that for you.</item>
+    </plurals>
     <string name="perm_restricted_help">If Android shows “Restricted setting” when you try to enable the service, open App info, tap the ⋮ menu and choose “Allow restricted settings”. This only affects apps not installed from Google Play.</string>
     <string name="perm_open_app_info">Open App info</string>
     <string name="perm_battery">Battery optimisation</string>

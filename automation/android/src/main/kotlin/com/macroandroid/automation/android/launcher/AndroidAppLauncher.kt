@@ -4,7 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
+import androidx.core.net.toUri
 import com.macroandroid.automation.android.accessibility.AccessibilityServiceRegistry
 import com.macroandroid.automation.android.gate.ForegroundGate
 import com.macroandroid.automation.port.AppLauncher
@@ -55,7 +55,7 @@ class AndroidAppLauncher @Inject constructor(
     }
 
     override suspend fun openUrl(url: String, preferPackage: String?): AppResult<Unit> = withContext(dispatchers.main) {
-        val uri = runCatching { Uri.parse(url) }.getOrNull()
+        val uri = runCatching { url.toUri() }.getOrNull()
             ?: return@withContext AppResult.err(ErrorCode.URL_SCHEME_NOT_ALLOWED)
         if (uri.scheme?.lowercase() !in ALLOWED_SCHEMES) return@withContext AppResult.err(ErrorCode.URL_SCHEME_NOT_ALLOWED, uri.scheme)
         if (!foregroundGate.mayStartActivity()) return@withContext AppResult.err(ErrorCode.FOREGROUND_REQUIRED)

@@ -14,6 +14,7 @@ import android.os.Build
 import android.util.LruCache
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.core.graphics.createBitmap
 import com.macroandroid.core.common.coroutines.AppDispatchers
 import com.macroandroid.feature.apps.domain.InstalledApp
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -88,7 +89,7 @@ class InstalledAppsDataSource @Inject constructor(
         val bitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
             Bitmap.createScaledBitmap(drawable.bitmap, sizePx, sizePx, true)
         } else {
-            Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888).also { bmp ->
+            createBitmap(sizePx, sizePx).also { bmp ->
                 val canvas = Canvas(bmp)
                 drawable.setBounds(0, 0, sizePx, sizePx)
                 drawable.draw(canvas)

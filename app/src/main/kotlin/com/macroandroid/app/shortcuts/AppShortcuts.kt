@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
 import com.macroandroid.app.R
 import com.macroandroid.app.ui.IntentRoutes
@@ -115,7 +116,7 @@ class AppShortcuts @Inject constructor(
 
 private fun Drawable.toBitmapCompat(): Bitmap {
     val size = ICON_PX
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
     setBounds(0, 0, size, size)
     draw(canvas)

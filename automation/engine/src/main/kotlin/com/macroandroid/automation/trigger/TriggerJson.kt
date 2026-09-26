@@ -25,17 +25,19 @@ object TriggerJson {
     const val MAX_BYTES = 256 * 1024
     const val MAX_TRIGGERS = 50
 
-    val instance: Json = Json {
+    /** Compact form used for the database column. */
+    private val compact: Json = Json {
         ignoreUnknownKeys = false
         isLenient = false
         encodeDefaults = false
         explicitNulls = false
+    }
+
+    /** Pretty form for the export document. Built from [compact] (an indent may only be set when pretty-printing). */
+    val instance: Json = Json(compact) {
         prettyPrint = true
         prettyPrintIndent = "  "
     }
-
-    /** Compact form used for the database column. */
-    private val compact: Json = Json(instance) { prettyPrint = false }
 
     fun encodeConfiguration(config: TriggerConfiguration): String =
         compact.encodeToString(TriggerConfiguration.serializer(), config)

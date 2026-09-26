@@ -12,6 +12,7 @@
         android:name=".MacroApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -34,8 +35,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="macroandroid" android:host="execution" />
-                <data android:scheme="macroandroid" android:host="macro" />
+                <data android:scheme="macroandroid" />
+                <data android:host="execution" />
+                <data android:host="macro" />
             </intent-filter>
             <meta-data
                 android:name="android.app.shortcuts"

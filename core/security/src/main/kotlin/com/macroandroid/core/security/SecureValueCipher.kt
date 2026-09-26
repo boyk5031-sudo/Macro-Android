@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
+import androidx.annotation.RequiresApi
 import com.macroandroid.core.common.error.AppError
 import com.macroandroid.core.common.error.AppResult
 import com.macroandroid.core.common.error.ErrorCode
@@ -78,10 +79,16 @@ class KeystoreSecureValueCipher @Inject constructor() : SecureValueCipher {
 
     private fun generate(): SecretKey {
         val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
-        fun spec(strongBox: Boolean) = KeyGenParameterSpec.Builder(
-            KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
-        )
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            generateStrongBoxOrTee(generator)
+        } else {
+            generator.init(spec(strongBox = false))
+            generator.generateKey()
+        }
+    }
+
+    private fun spec(strongBox: Boolean): KeyGenParameterSpec =
+        KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(KEY_BITS)
@@ -94,15 +101,6 @@ class KeystoreSecureValueCipher @Inject constructor() : SecureValueCipher {
                 }
             }
             .build()
-        return try {
-            generator.init(spec(strongBox = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P))
-            generator.generateKey()
-        } catch (_: StrongBoxUnavailableException) {
-            // Documented fallback: StrongBox is optional hardware; TEE-backed keys are the baseline (ADR-0006).
-            generator.init(spec(strongBox = false))
-            generator.generateKey()
-        }
-    }
 
     private inline fun <T> guard(block: () -> T): AppResult<T> = try {
         AppResult.ok(block())
@@ -116,6 +114,16 @@ class KeystoreSecureValueCipher @Inject constructor() : SecureValueCipher {
         AppResult.Err(AppError(ErrorCode.KEYSTORE_UNAVAILABLE, e.javaClass.simpleName, e))
     } catch (e: IllegalStateException) {
         AppResult.Err(AppError(ErrorCode.KEYSTORE_UNAVAILABLE, e.javaClass.simpleName, e))
+    }
+
+    /** StrongBox is optional hardware; TEE-backed keys are the documented baseline (ADR-0006). */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun generateStrongBoxOrTee(generator: KeyGenerator): SecretKey = try {
+        generator.init(spec(strongBox = true))
+        generator.generateKey()
+    } catch (_: StrongBoxUnavailableException) {
+        generator.init(spec(strongBox = false))
+        generator.generateKey()
     }
 
     companion object {

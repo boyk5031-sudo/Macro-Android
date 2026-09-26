@@ -2,6 +2,7 @@ package com.macroandroid.app.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.macroandroid.automation.android.service.MacroRunner
@@ -126,8 +127,8 @@ object IntentRoutes {
         data object Runs : Route
     }
 
-    fun runMacroUri(macroId: String): Uri = Uri.parse("$SCHEME://macro/$macroId/run")
-    fun executionUri(executionId: String): Uri = Uri.parse("$SCHEME://execution/$executionId")
+    fun runMacroUri(macroId: String): Uri = "$SCHEME://macro/$macroId/run".toUri()
+    fun executionUri(executionId: String): Uri = "$SCHEME://execution/$executionId".toUri()
 
     fun parse(uri: Uri): Route? {
         if (uri.scheme != SCHEME) return null

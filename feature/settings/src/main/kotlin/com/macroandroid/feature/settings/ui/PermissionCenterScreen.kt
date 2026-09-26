@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -120,7 +121,7 @@ fun PermissionCenterRoute(
     if (confirmWithdraw) {
         ConfirmDialog(
             title = stringResource(R.string.perm_withdraw_title),
-            text = stringResource(R.string.perm_withdraw_body, state.a11yMacroCount),
+            text = pluralStringResource(R.plurals.perm_withdraw_body, state.a11yMacroCount, state.a11yMacroCount),
             confirmLabel = stringResource(R.string.perm_withdraw),
             dismissLabel = stringResource(android.R.string.cancel),
             onConfirm = { viewModel.withdrawConsent(); confirmWithdraw = false },

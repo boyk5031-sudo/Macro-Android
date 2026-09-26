@@ -3,6 +3,7 @@ package com.macroandroid.feature.apkimport.data
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import com.macroandroid.core.common.contract.AuditContract
 import com.macroandroid.core.common.coroutines.AppDispatchers
 import com.macroandroid.core.common.error.AppResult
@@ -158,7 +159,7 @@ class ApkRepository @Inject constructor(
     /** FR-APK-5: verify the grant before reading; FR-APK-6 "Re-verify checksum". */
     suspend fun reverify(id: String): AppResult<Boolean> = withContext(dispatchers.io) {
         val row = dao.get(id) ?: return@withContext AppResult.err(ErrorCode.APK_NOT_FOUND, id)
-        val uri = Uri.parse(row.uri)
+        val uri = row.uri.toUri()
         if (!analyzer.hasPersistedReadPermission(uri)) {
             dao.setStatus(id, ApkStatus.UNAVAILABLE.name, ErrorCode.URI_PERMISSION_REVOKED.name)
             dao.setGrantValid(id, false)
@@ -205,7 +206,7 @@ class ApkRepository @Inject constructor(
         row.localCopyPath?.let { File(it).delete() }
         if (dao.countByUri(row.uri) == 0) {
             try {
-                context.contentResolver.releasePersistableUriPermission(Uri.parse(row.uri), Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                context.contentResolver.releasePersistableUriPermission(row.uri.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } catch (e: SecurityException) {
                 logger.d(TAG, "release grant failed: ${e.message}")
             }
@@ -218,7 +219,7 @@ class ApkRepository @Inject constructor(
     /** Share intent for the detail screen; explicit read grant per Android 18 guidance. */
     fun shareIntent(apk: ImportedApk): Intent = Intent(Intent.ACTION_SEND).apply {
         type = "application/vnd.android.package-archive"
-        putExtra(Intent.EXTRA_STREAM, Uri.parse(apk.uri))
+        putExtra(Intent.EXTRA_STREAM, apk.uri.toUri())
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 

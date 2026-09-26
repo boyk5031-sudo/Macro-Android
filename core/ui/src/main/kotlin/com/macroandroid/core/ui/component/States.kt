@@ -38,8 +38,8 @@ fun LoadingState(modifier: Modifier = Modifier) {
 fun EmptyState(
     icon: ImageVector,
     title: String,
-    description: String? = null,
     modifier: Modifier = Modifier,
+    description: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
@@ -70,8 +70,8 @@ fun EmptyState(
 @Composable
 fun ErrorState(
     title: String,
-    description: String? = null,
     modifier: Modifier = Modifier,
+    description: String? = null,
     retryLabel: String? = null,
     onRetry: (() -> Unit)? = null,
 ) {

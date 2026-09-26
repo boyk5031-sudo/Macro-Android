@@ -59,7 +59,10 @@
         <item quantity="one">Imported %d macro</item>
         <item quantity="other">Imported %d macros</item>
     </plurals>
-    <string name="macro_import_preview_title">Import %1$d macro(s) (schema v%2$d)</string>
+    <plurals name="macro_import_preview_title">
+        <item quantity="one">Import %1$d macro (schema v%2$d)</item>
+        <item quantity="other">Import %1$d macros (schema v%2$d)</item>
+    </plurals>
     <string name="macro_import_conflict">A macro with this name already exists in the same profile.</string>
     <string name="macro_import_redacted">Contains secure values that were not exported; re-enter them after import.</string>
     <string name="macro_import_rename">Rename</string>
