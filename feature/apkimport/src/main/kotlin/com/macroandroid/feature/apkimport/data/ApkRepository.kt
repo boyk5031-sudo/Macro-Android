@@ -8,7 +8,7 @@ import com.macroandroid.core.common.coroutines.AppDispatchers
 import com.macroandroid.core.common.error.AppResult
 import com.macroandroid.core.common.error.ErrorCode
 import com.macroandroid.core.common.logging.Logger
-import com.macroandroid.core.database.dao.AppDao
+import com.macroandroid.core.database.dao.ImportedApkDao
 import com.macroandroid.core.database.entity.ImportedApkEntity
 import com.macroandroid.core.datastore.UserPreferencesRepository
 import com.macroandroid.feature.apkimport.domain.ApkImportOutcome
@@ -33,7 +33,7 @@ import kotlin.uuid.Uuid
 @Singleton
 class ApkRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dao: AppDao,
+    private val dao: ImportedApkDao,
     private val analyzer: ApkAnalyzer,
     private val prefs: UserPreferencesRepository,
     private val audit: AuditContract,
@@ -157,7 +157,7 @@ class ApkRepository @Inject constructor(
 
     /** FR-APK-5: verify the grant before reading; FR-APK-6 "Re-verify checksum". */
     suspend fun reverify(id: String): AppResult<Boolean> = withContext(dispatchers.io) {
-        val row = dao.get(id) ?: return@withContext AppResult.err(ErrorCode.NOT_FOUND, id)
+        val row = dao.get(id) ?: return@withContext AppResult.err(ErrorCode.APK_NOT_FOUND, id)
         val uri = Uri.parse(row.uri)
         if (!analyzer.hasPersistedReadPermission(uri)) {
             dao.setStatus(id, ApkStatus.UNAVAILABLE.name, ErrorCode.URI_PERMISSION_REVOKED.name)

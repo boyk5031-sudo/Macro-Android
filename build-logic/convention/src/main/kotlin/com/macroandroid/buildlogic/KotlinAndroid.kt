@@ -107,6 +107,8 @@ private inline fun <reified T : KotlinBaseExtension> Project.configureKotlin() =
         allWarningsAsErrors.set(warningsAsErrors)
         freeCompilerArgs.addAll(
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            // Kotlin 2.2+ migration: annotate constructor `val` parameters as both param and property (Hilt qualifiers).
+            "-Xannotation-default-target=param-property",
         )
     }
 }

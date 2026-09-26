@@ -61,7 +61,8 @@ object ErrorMessages {
         ErrorCode.SECURE_VALUE_UNAVAILABLE, ErrorCode.KEYSTORE_UNAVAILABLE -> R.string.err_secure_unavailable
         ErrorCode.KEY_INVALIDATED -> R.string.err_key_invalidated
         ErrorCode.CHECKSUM_MISMATCH -> R.string.err_checksum
-        ErrorCode.MACRO_NOT_FOUND, ErrorCode.SCHEDULE_NOT_FOUND, ErrorCode.EXECUTION_NOT_FOUND -> R.string.err_not_found
+        ErrorCode.MACRO_NOT_FOUND, ErrorCode.SCHEDULE_NOT_FOUND, ErrorCode.EXECUTION_NOT_FOUND, ErrorCode.APK_NOT_FOUND ->
+            R.string.err_not_found
         ErrorCode.CANCELLED_BY_USER -> R.string.err_cancelled_user
         ErrorCode.CANCELLED_PROCESS_DEATH, ErrorCode.CANCELLED_REBOOT, ErrorCode.CANCELLED_SUPERSEDED -> R.string.err_interrupted
         else -> when (code.category) {

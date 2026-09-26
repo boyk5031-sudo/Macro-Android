@@ -49,7 +49,11 @@ class MacroSentencesTest {
     @Test
     fun `secure text is never rendered`() {
         val s = MacroSentences.sentence(
-            ActionParameters.EnterText(selector = NodeSelector(viewId = "pwd"), text = TextValue.Secure(SecureValueRef("id")), sensitive = true),
+            ActionParameters.EnterText(
+                selector = NodeSelector(viewId = "pwd"),
+                text = TextValue.Secure(SecureValueRef("id")),
+                sensitive = true,
+            ),
         )
         assertThat(s).isEqualTo("Enter a secret value into #pwd.")
         assertThat(s).doesNotContain("id")

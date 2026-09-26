@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 internal fun Project.configureAndroidCompose(commonExtension: CommonExtension) {
     commonExtension.apply {
@@ -28,6 +29,11 @@ internal fun Project.configureAndroidCompose(commonExtension: CommonExtension) {
         "debugImplementation"(libs.findLibrary("compose-ui-tooling").get())
         "debugImplementation"(libs.findLibrary("compose-ui-test-manifest").get())
         "androidTestImplementation"(libs.findLibrary("compose-ui-test-junit4").get())
+    }
+
+    // Material 3 still marks bottom sheets, exposed dropdowns and top-bar scroll behaviour as experimental.
+    extensions.configure<KotlinAndroidProjectExtension> {
+        compilerOptions.freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
 
     extensions.configure<ComposeCompilerGradlePluginExtension> {

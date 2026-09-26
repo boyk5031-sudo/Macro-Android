@@ -118,6 +118,7 @@ enum class ErrorCode(
     MACRO_NOT_FOUND(ErrorCategory.DATA),
     SCHEDULE_NOT_FOUND(ErrorCategory.DATA),
     EXECUTION_NOT_FOUND(ErrorCategory.DATA),
+    APK_NOT_FOUND(ErrorCategory.DATA),
 
     // ---- INTERNAL ---------------------------------------------------------------------------
     UNEXPECTED(ErrorCategory.INTERNAL),

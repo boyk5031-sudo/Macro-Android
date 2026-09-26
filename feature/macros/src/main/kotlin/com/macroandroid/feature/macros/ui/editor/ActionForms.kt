@@ -283,7 +283,6 @@ private fun SetVariableForm(a: ActionParameters.SetVariable, onChange: (ActionPa
     }
 }
 
-
 @Composable
 private fun ConcatEditor(e: Expression.Concat, onChange: (Expression.Concat) -> Unit, variables: List<String>) {
     e.parts.forEachIndexed { i, part ->

@@ -230,7 +230,13 @@ class MacroExecutor(
             }
         }
 
-        @Suppress("ReturnCount") // each return is a terminal state of the doc 07 state machine
+        /** FR-MAC-5: a step test executes exactly one step (containers run with their children) as a top-level list. */
+        private fun stepsFor(macro: Macro): List<MacroStep>? = when (val origin = request.origin) {
+            is ExecutionOrigin.StepTest -> macro.allSteps().firstOrNull { it.id == origin.stepId }?.let { listOf(it.copy(enabled = true)) }
+            else -> macro.steps
+        }
+
+        @Suppress("ReturnCount", "CyclomaticComplexMethod") // each return is a terminal state of the doc 07 state machine
         private suspend fun runInternal(): ExecutionOutcome {
             // QUEUED → PREPARING: wait for a slot (bounded by queueTimeout).
             val acquired = withTimeoutOrNull(config.queueTimeout) { slots.acquire(); true } ?: false
@@ -258,12 +264,8 @@ class MacroExecutor(
             transition(ExecutionState.RUNNING)
             ports.hooks.onRunningStarted(record, macro)
 
-            // FR-MAC-5: a step test executes exactly one step (containers run with their children) as a top-level list.
-            val stepsToRun = when (val origin = request.origin) {
-                is ExecutionOrigin.StepTest -> macro.allSteps().firstOrNull { it.id == origin.stepId }?.let { listOf(it.copy(enabled = true)) }
-                    ?: return finish(ExecutionState.REJECTED, AppError(ErrorCode.MACRO_NOT_FOUND, "step ${origin.stepId}"))
-                else -> macro.steps
-            }
+            val stepsToRun = stepsFor(macro)
+                ?: return finish(ExecutionState.REJECTED, AppError(ErrorCode.MACRO_NOT_FOUND, "step ${request.origin}"))
             val result = withTimeoutOrNull(macro.executionPolicy.totalTimeout) {
                 executeList(stepsToRun, topLevel = true)
             } ?: return finish(ExecutionState.FAILED, AppError(ErrorCode.MACRO_TIMEOUT))

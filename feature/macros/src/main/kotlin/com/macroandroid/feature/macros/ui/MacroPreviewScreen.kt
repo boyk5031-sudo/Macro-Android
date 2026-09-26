@@ -65,7 +65,11 @@ fun MacroPreviewRoute(
                                     MaterialTheme.colorScheme.onSurface,
                                 )
                                 if (m.requiresAccessibility) {
-                                    StatusChip(stringResource(R.string.macro_chip_a11y), MacroTheme.status.warning, MacroTheme.status.onWarning)
+                                    StatusChip(
+                                        stringResource(R.string.macro_chip_a11y),
+                                        MacroTheme.status.warning,
+                                        MacroTheme.status.onWarning,
+                                    )
                                 }
                             }
                         }

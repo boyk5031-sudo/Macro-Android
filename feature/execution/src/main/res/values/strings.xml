@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exe_title">Executions</string>
+    <string name="exe_detail_title">Execution</string>
+    <string name="exe_tab_active">Active (%1$d)</string>
+    <string name="exe_tab_history">History</string>
+    <string name="exe_cancel_all">Cancel all</string>
+    <string name="exe_cancel_all_title">Cancel all running macros?</string>
+    <string name="exe_cancel_all_body">Every queued, running and paused execution will be stopped.</string>
+    <string name="exe_clear_history">Clear history</string>
+    <string name="exe_clear_history_title">Clear execution history?</string>
+    <string name="exe_clear_history_body">All finished executions, their step timelines and logs will be deleted. Active runs are kept.</string>
+    <string name="exe_active_empty_title">Nothing running</string>
+    <string name="exe_active_empty_body">Executions you start from a macro, a shortcut or a schedule appear here while they run.</string>
+    <string name="exe_history_empty_title">No executions yet</string>
+    <string name="exe_history_empty_body">Finished runs are listed here with their outcome, timeline and log.</string>
+    <string name="exe_filter_all">All</string>
+    <string name="exe_filter_all_macros">All macros</string>
+    <string name="exe_load_more">Load more</string>
+    <string name="exe_pause">Pause</string>
+    <string name="exe_resume">Resume</string>
+    <string name="exe_cancel">Cancel</string>
+    <string name="exe_rerun">Run again</string>
+    <string name="exe_rerun_started">Started a new run</string>
+    <string name="exe_open">Open</string>
+    <string name="exe_export">Export log</string>
+    <string name="exe_exported">Log exported</string>
+    <string name="exe_not_found">Execution not found</string>
+    <string name="exe_open_macro">Open macro</string>
+    <string name="exe_queued_at">Queued %1$s</string>
+    <string name="exe_started_at">Started %1$s</string>
+    <string name="exe_ended_at">Ended %1$s</string>
+    <string name="exe_progress">%1$d of %2$d steps completed · %3$d retries</string>
+    <string name="exe_blocked_reason">Waiting: %1$s</string>
+    <string name="exe_steps_section">Steps (%1$d attempts)</string>
+    <string name="exe_log_section">Log (%1$d lines)</string>
+    <string name="exe_attempt">attempt %1$d</string>
+
+    <string name="exe_state_queued">Queued</string>
+    <string name="exe_state_preparing">Preparing</string>
+    <string name="exe_state_running">Running</string>
+    <string name="exe_state_paused">Paused</string>
+    <string name="exe_state_blocked">Waiting</string>
+    <string name="exe_state_completed">Completed</string>
+    <string name="exe_state_failed">Failed</string>
+    <string name="exe_state_cancelled">Cancelled</string>
+    <string name="exe_state_rejected">Rejected</string>
+    <string name="exe_state_skipped">Skipped</string>
+    <string name="exe_state_interrupted">Interrupted</string>
+
+    <string name="exe_step_pending">pending</string>
+    <string name="exe_step_running">running</string>
+    <string name="exe_step_completed">done</string>
+    <string name="exe_step_failed">failed</string>
+    <string name="exe_step_timed_out">timed out</string>
+    <string name="exe_step_cancelled">cancelled</string>
+    <string name="exe_step_skipped">skipped</string>
+
+    <string name="exe_origin_manual">Manual</string>
+    <string name="exe_origin_shortcut">Shortcut</string>
+    <string name="exe_origin_schedule">Scheduled</string>
+    <string name="exe_origin_schedule_late">Scheduled (late)</string>
+    <string name="exe_origin_step_test">Step test</string>
+</resources>
