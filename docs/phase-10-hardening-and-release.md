@@ -46,8 +46,10 @@ release.keyPassword=…                       RELEASE_KEYPASSWORD
 
 - ⬜ Generate the upload key (`keytool -genkeypair -v -keystore upload-keystore.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`).
 - ⬜ Enrol in Play App Signing; upload the certificate; store the four secrets in the GitHub environment `release`.
-- ⬜ Add a `release.yml` workflow (tag `v*`) that runs the same steps as `ci.yml` plus `bundleRelease` and uploads the AAB
-      and `mapping.txt` as artifacts. Kept out of `ci.yml` so PR builds never touch signing secrets.
+- ✅ `release.yml` (tag `v*`, environment `release`) re-runs the verification gates, decodes
+      `RELEASE_KEYSTORE_BASE64` into the runner temp dir, builds `bundleRelease` + `assembleRelease`, uploads the AAB,
+      APK and `mapping.txt`, and opens a draft GitHub release. Secrets: `RELEASE_KEYSTORE_BASE64`,
+      `RELEASE_STOREPASSWORD`, `RELEASE_KEYALIAS`, `RELEASE_KEYPASSWORD`.
 
 ## 4. Play Console checklist (manual)
 

@@ -1,0 +1,74 @@
+name: release
+
+# Builds a signed AAB from a version tag. Secrets live in the `release` environment (docs/phase-10 §3) and are never
+# available to pull-request builds.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g
+  JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+
+jobs:
+  bundle:
+    name: signed release bundle
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: true
+
+      - name: Verify (same gates as ci.yml)
+        shell: bash
+        run: ./gradlew --no-daemon detekt testDebugUnitTest lintRelease checkModuleBoundaries :app:checkReleaseForbiddenPermissions
+
+      - name: Decode upload keystore
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::RELEASE_KEYSTORE_BASE64 secret missing"; exit 1; fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload-keystore.jks"
+
+      - name: Bundle release
+        shell: bash
+        env:
+          RELEASE_STOREFILE: ${{ runner.temp }}/upload-keystore.jks
+          RELEASE_STOREPASSWORD: ${{ secrets.RELEASE_STOREPASSWORD }}
+          RELEASE_KEYALIAS: ${{ secrets.RELEASE_KEYALIAS }}
+          RELEASE_KEYPASSWORD: ${{ secrets.RELEASE_KEYPASSWORD }}
+        run: ./gradlew --no-daemon :app:bundleRelease :app:assembleRelease
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.ref_name }}
+          if-no-files-found: error
+          path: |
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/mapping/release/mapping.txt
+
+      - name: GitHub release (draft)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/mapping/release/mapping.txt
