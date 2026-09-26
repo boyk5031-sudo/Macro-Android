@@ -135,7 +135,7 @@ class ApkAnalyzer @Inject constructor(
                 label = label,
                 signerSha256 = signerDigest,
                 permissions = info.requestedPermissions?.toList().orEmpty(),
-                isSplit = info.splitNames?.isNotEmpty() == true || app?.splitSourceDirs?.isNotEmpty() == true,
+                isSplit = info.splitNames.orEmpty().isNotEmpty() || app?.splitSourceDirs?.isNotEmpty() == true,
             ),
         )
     }

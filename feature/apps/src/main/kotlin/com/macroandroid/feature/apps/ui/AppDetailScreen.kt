@@ -16,9 +16,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.AddToHomeScreen
+import androidx.compose.material.icons.automirrored.outlined.Launch
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.AddToHomeScreen
-import androidx.compose.material.icons.outlined.Launch
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Button
@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.macroandroid.core.ui.component.ErrorState
 import com.macroandroid.core.ui.component.LoadingState
@@ -125,7 +125,7 @@ private fun AppDetailContent(
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(onClick = onLaunch, enabled = app.isEnabled) {
-                Icon(Icons.Outlined.Launch, contentDescription = null)
+                Icon(Icons.AutoMirrored.Outlined.Launch, contentDescription = null)
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.apps_launch))
             }
@@ -138,7 +138,7 @@ private fun AppDetailContent(
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = onPin, enabled = state.pinSupported) {
-                Icon(Icons.Outlined.AddToHomeScreen, contentDescription = null)
+                Icon(Icons.AutoMirrored.Outlined.AddToHomeScreen, contentDescription = null)
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.apps_pin))
             }

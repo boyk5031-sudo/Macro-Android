@@ -16,12 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,7 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.macroandroid.core.ui.component.EmptyState
 import com.macroandroid.core.ui.component.LoadingState
@@ -163,7 +163,7 @@ internal class AppsCallbacks(
 private fun SortMenu(current: AppsSortOrder?, onSelect: (AppsSortOrder) -> Unit) {
     var open by remember { mutableStateOf(false) }
     IconButton(onClick = { open = true }) {
-        Icon(Icons.Outlined.Sort, contentDescription = stringResource(R.string.apps_sort))
+        Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = stringResource(R.string.apps_sort))
     }
     DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
         AppsSortOrder.entries.forEach { order ->

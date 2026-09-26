@@ -13,11 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -45,7 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.macroandroid.core.ui.component.ConfirmDialog
 import com.macroandroid.core.ui.component.EmptyState
@@ -188,7 +188,7 @@ fun ApkListRoute(
 @Composable
 private fun SortMenu(current: ApkSort, onSelect: (ApkSort) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    IconButton(onClick = { open = true }) { Icon(Icons.Outlined.Sort, contentDescription = stringResource(R.string.apk_sort)) }
+    IconButton(onClick = { open = true }) { Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = stringResource(R.string.apk_sort)) }
     DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
         ApkSort.entries.forEach { s ->
             DropdownMenuItem(
