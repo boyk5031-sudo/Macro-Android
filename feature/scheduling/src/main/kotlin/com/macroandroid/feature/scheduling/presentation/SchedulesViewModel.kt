@@ -61,7 +61,7 @@ class SchedulesViewModel @Inject constructor(
             rows = list.map { s ->
                 val m = byId[s.spec.macroId]
                 ScheduleRow(s, m?.name ?: "?", m?.enabled == true)
-            }.sortedWith(compareBy<ScheduleRow>({ !it.stored.spec.enabled }, { it.stored.nextRunAt ?: Instant.DISTANT_FUTURE })).toImmutableList(),
+            }.sortedWith(ROW_ORDER).toImmutableList(),
             macroFilter = macroFilter,
             macroName = macroFilter?.let { byId[it]?.name },
             loaded = true,
@@ -84,6 +84,7 @@ class SchedulesViewModel @Inject constructor(
     }
 
     companion object {
+        private val ROW_ORDER = compareBy<ScheduleRow>({ !it.stored.spec.enabled }, { it.stored.nextRunAt ?: Instant.DISTANT_FUTURE })
         const val ARG_MACRO_ID = "macroId"
         private const val STOP_TIMEOUT_MS = 5_000L
     }
