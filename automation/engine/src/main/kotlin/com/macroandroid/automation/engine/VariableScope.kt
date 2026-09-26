@@ -37,7 +37,10 @@ class VariableScope(initial: Map<String, RuntimeValue> = emptyMap()) {
                 val name = m.groupValues[1]
                 when (val v = values[name]) {
                     null -> { error = error ?: com.macroandroid.core.common.error.AppError(ErrorCode.VARIABLE_UNDEFINED, name); "" }
-                    is RuntimeValue.Secret -> { error = error ?: com.macroandroid.core.common.error.AppError(ErrorCode.SECURE_IN_TEMPLATE, name); "" }
+                    is RuntimeValue.Secret -> {
+                        error = error ?: com.macroandroid.core.common.error.AppError(ErrorCode.SECURE_IN_TEMPLATE, name)
+                        ""
+                    }
                     else -> v.asDisplayString()
                 }
             }

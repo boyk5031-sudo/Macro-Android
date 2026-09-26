@@ -68,8 +68,10 @@ class MacroValidatorTest {
         assertThat(validator.validate(macro(step(1, nest(4)))).has(ErrorCode.NESTING_LIMIT)).isFalse()
         assertThat(validator.validate(macro(step(1, nest(5)))).has(ErrorCode.NESTING_LIMIT)).isTrue()
 
-        assertThat(validator.validate(macro(step(1, ActionParameters.Repeat(count = 0, body = listOf(log(2, "x")))))).has(ErrorCode.REPEAT_BOUNDS)).isTrue()
-        assertThat(validator.validate(macro(step(1, ActionParameters.Repeat(body = listOf(log(2, "x")))))).has(ErrorCode.REPEAT_BOUNDS)).isTrue()
+        val zero = validator.validate(macro(step(1, ActionParameters.Repeat(count = 0, body = listOf(log(2, "x"))))))
+        assertThat(zero.has(ErrorCode.REPEAT_BOUNDS)).isTrue()
+        val unbounded = validator.validate(macro(step(1, ActionParameters.Repeat(body = listOf(log(2, "x"))))))
+        assertThat(unbounded.has(ErrorCode.REPEAT_BOUNDS)).isTrue()
         assertThat(
             validator.validate(
                 macro(step(1, ActionParameters.Repeat(whileCondition = Condition.AppInstalled("a.b"), body = listOf(log(2, "x"))))),
@@ -101,14 +103,20 @@ class MacroValidatorTest {
     @Test
     fun `package names urls selectors regex`() {
         assertThat(validator.validate(macro(step(1, ActionParameters.LaunchApp("nodots")))).has(ErrorCode.PACKAGE_NAME_INVALID)).isTrue()
-        assertThat(validator.validate(macro(step(1, ActionParameters.OpenUrl(literal("intent://x"))))).has(ErrorCode.URL_SCHEME_NOT_ALLOWED)).isTrue()
+        val intentUrl = validator.validate(macro(step(1, ActionParameters.OpenUrl(literal("intent://x")))))
+        assertThat(intentUrl.has(ErrorCode.URL_SCHEME_NOT_ALLOWED)).isTrue()
         assertThat(validator.validate(macro(step(1, ActionParameters.OpenUrl(literal("https://example.com"))))).isValid).isTrue()
-        val varUrl = validator.validate(macro(step(1, ActionParameters.OpenUrl(TextValue.Var("u"))), variables = mapOf("u" to VariableValue.Str("https://a"))))
+        val varUrl = validator.validate(
+            macro(step(1, ActionParameters.OpenUrl(TextValue.Var("u"))), variables = mapOf("u" to VariableValue.Str("https://a"))),
+        )
         assertThat(varUrl.isValid).isTrue()
         assertThat(varUrl.has(ErrorCode.URL_RUNTIME_CHECK)).isTrue()
-        assertThat(validator.validate(macro(step(1, ActionParameters.ClickNode(NodeSelector(index = 1))))).has(ErrorCode.SELECTOR_EMPTY)).isTrue()
-        assertThat(validator.validate(macro(step(1, ActionParameters.ClickNode(NodeSelector(text = "(", textMatch = TextMatch.REGEX))))).has(ErrorCode.REGEX_INVALID)).isTrue()
-        assertThat(validator.validate(macro(step(1, ActionParameters.ClickNode(sel, requireVisible = false)))).has(ErrorCode.ACTION_NOT_SUPPORTED)).isTrue()
+        val indexOnly = validator.validate(macro(step(1, ActionParameters.ClickNode(NodeSelector(index = 1)))))
+        assertThat(indexOnly.has(ErrorCode.SELECTOR_EMPTY)).isTrue()
+        val badRegex = validator.validate(macro(step(1, ActionParameters.ClickNode(NodeSelector(text = "(", textMatch = TextMatch.REGEX)))))
+        assertThat(badRegex.has(ErrorCode.REGEX_INVALID)).isTrue()
+        val invisibleClick = validator.validate(macro(step(1, ActionParameters.ClickNode(sel, requireVisible = false))))
+        assertThat(invisibleClick.has(ErrorCode.ACTION_NOT_SUPPORTED)).isTrue()
     }
 
     @Test
@@ -142,7 +150,9 @@ class MacroValidatorTest {
         val unflagged = macro(step(1, ActionParameters.EnterText(text = TextValue.Secure(SecureValueRef("s1")))))
         assertThat(validator.validate(unflagged).has(ErrorCode.SENSITIVE_FLAG_REQUIRED)).isTrue()
 
-        val redacted = macro(step(1, ActionParameters.EnterText(text = TextValue.Secure(SecureValueRef("s1", redacted = true)), sensitive = true)))
+        val redacted = macro(
+            step(1, ActionParameters.EnterText(text = TextValue.Secure(SecureValueRef("s1", redacted = true)), sensitive = true)),
+        )
         assertThat(validator.validate(redacted).has(ErrorCode.SECURE_VALUE_REDACTED)).isTrue()
 
         val env = object : ValidationEnvironment {

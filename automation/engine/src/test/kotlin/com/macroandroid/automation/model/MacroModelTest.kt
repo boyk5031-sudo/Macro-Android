@@ -15,7 +15,10 @@ class MacroModelTest {
         val m = macro(
             step(1, ActionParameters.LaunchApp("a.b")),
             step(2, ActionParameters.Repeat(count = 3, body = listOf(log(3, "x"), log(4, "y")))),
-            step(5, ActionParameters.If(Condition.AppInstalled("c.d"), then = listOf(log(6, "t")), `else` = listOf(log(7, "e"), log(8, "f")))),
+            step(
+                5,
+                ActionParameters.If(Condition.AppInstalled("c.d"), then = listOf(log(6, "t")), `else` = listOf(log(7, "e"), log(8, "f"))),
+            ),
             step(9, ActionParameters.Parallel(children = listOf(log(10, "p"), log(11, "q")))),
         )
         assertThat(m.expandedLeafCount).isEqualTo(1 + 6 + 2 + 2)

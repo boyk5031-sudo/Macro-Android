@@ -63,7 +63,10 @@ interface ExecutionDao {
     )
     suspend fun interruptOrphans(liveOwnerToken: String, now: Long, errorCode: String): Int
 
-    @Query("UPDATE execution_steps SET state = 'CANCELLED', ended_at = :now WHERE state = 'RUNNING' AND execution_id IN (SELECT id FROM executions WHERE state = 'INTERRUPTED')")
+    @Query(
+        "UPDATE execution_steps SET state = 'CANCELLED', ended_at = :now WHERE state = 'RUNNING' " +
+            "AND execution_id IN (SELECT id FROM executions WHERE state = 'INTERRUPTED')",
+    )
     suspend fun cancelOrphanSteps(now: Long): Int
 
     // ---- steps & logs ----

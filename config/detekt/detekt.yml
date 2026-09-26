@@ -37,7 +37,7 @@ style:
   MagicNumber:
     active: false
   MaxLineLength:
-    maxLineLength: 120
+    maxLineLength: 140
     excludeCommentStatements: true
   ReturnCount:
     max: 4
@@ -74,7 +74,7 @@ formatting:
   android: true
   autoCorrect: true
   MaximumLineLength:
-    maxLineLength: 120
+    maxLineLength: 140
   TrailingCommaOnCallSite:
     active: true
     useTrailingCommaOnCallSite: true

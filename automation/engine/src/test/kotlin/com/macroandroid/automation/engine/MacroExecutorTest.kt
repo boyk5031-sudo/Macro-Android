@@ -34,6 +34,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.launch
@@ -444,7 +445,12 @@ class MacroExecutorTest {
         h.add(m)
         val handle = (
             h.executor.enqueue(
-                RunRequest(m.id, ExecutionOrigin.Schedule(com.macroandroid.automation.model.ScheduleId("s")), "r", skipBecauseMissed = true),
+                RunRequest(
+                    m.id,
+                    ExecutionOrigin.Schedule(com.macroandroid.automation.model.ScheduleId("s")),
+                    "r",
+                    skipBecauseMissed = true,
+                ),
             ) as AppResult.Ok
             ).value
         val outcome = handle.await()

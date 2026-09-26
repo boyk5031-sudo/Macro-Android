@@ -80,7 +80,10 @@ fun AppDetailRoute(
     ) { padding ->
         when (val s = state) {
             AppDetailUiState.Loading -> LoadingState(Modifier.padding(padding))
-            AppDetailUiState.NotFound -> ErrorState(title = stringResource(R.string.apps_detail_not_found), modifier = Modifier.padding(padding))
+            AppDetailUiState.NotFound -> ErrorState(
+                title = stringResource(R.string.apps_detail_not_found),
+                modifier = Modifier.padding(padding),
+            )
             is AppDetailUiState.Ready -> AppDetailContent(
                 state = s,
                 modifier = Modifier.padding(padding),
@@ -155,7 +158,10 @@ private fun AppDetailContent(
         Spacer(Modifier.height(16.dp))
         HorizontalDivider()
         DetailRow(stringResource(R.string.apps_detail_package), app.packageName)
-        DetailRow(stringResource(R.string.apps_detail_version), stringResource(R.string.apps_detail_version_value, app.versionName ?: "—", app.versionCode))
+        DetailRow(
+            stringResource(R.string.apps_detail_version),
+            stringResource(R.string.apps_detail_version_value, app.versionName ?: "—", app.versionCode),
+        )
         DetailRow(stringResource(R.string.apps_detail_installed), formatDate(context, app))
         DetailRow(stringResource(R.string.apps_detail_updated), formatUpdated(context, app))
         DetailRow(stringResource(R.string.apps_detail_enabled), yesNo(app.isEnabled))

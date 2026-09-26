@@ -141,7 +141,10 @@ class MacroExecutor(
         )
         val rejection = policyRejection(macro, request, now)
         if (rejection != null) {
-            ports.store.insert(record.transition(ExecutionState.REJECTED).copy(endedAt = now, errorCode = rejection, errorCategory = rejection.category))
+            ports.store.insert(
+                record.transition(ExecutionState.REJECTED)
+                    .copy(endedAt = now, errorCode = rejection, errorCategory = rejection.category),
+            )
             emit(ExecutionEvent.StateChanged(record.id, ExecutionState.QUEUED, ExecutionState.REJECTED, rejection))
             return AppResult.err(rejection)
         }
@@ -216,7 +219,8 @@ class MacroExecutor(
                     runInternal()
                 }
             } catch (e: CancellationException) {
-                val code = if (e is UserCancel || controls.cancelRequested.value) ErrorCode.CANCELLED_BY_USER else ErrorCode.CANCELLED_PROCESS_DEATH
+                val userCancelled = e is UserCancel || controls.cancelRequested.value
+                val code = if (userCancelled) ErrorCode.CANCELLED_BY_USER else ErrorCode.CANCELLED_PROCESS_DEATH
                 withContext(NonCancellable) { finish(ExecutionState.CANCELLED, AppError(code)) }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 withContext(NonCancellable) { finish(ExecutionState.FAILED, AppError(ErrorCode.UNEXPECTED, e.javaClass.simpleName, e)) }
@@ -448,7 +452,11 @@ class MacroExecutor(
                         return StepOutcome.Ok
                     }
                     is ActionResult.Stop -> {
-                        attemptRow = attemptRow.copy(state = StepState.COMPLETED, endedAt = clock.now(), outputSummary = "stop(${result.success})")
+                        attemptRow = attemptRow.copy(
+                            state = StepState.COMPLETED,
+                            endedAt = clock.now(),
+                            outputSummary = "stop(${result.success})",
+                        )
                         ports.store.updateStepAttempt(attemptRow)
                         flushLogs()
                         emit(ExecutionEvent.StepFinished(record.id, index, step.id, attempt, StepState.COMPLETED))
@@ -457,7 +465,12 @@ class MacroExecutor(
                     is ActionResult.Failure -> {
                         val error = result.error
                         val state = if (error.code == ErrorCode.STEP_TIMEOUT) StepState.TIMED_OUT else StepState.FAILED
-                        attemptRow = attemptRow.copy(state = state, endedAt = clock.now(), errorCode = error.code, errorCategory = error.category)
+                        attemptRow = attemptRow.copy(
+                            state = state,
+                            endedAt = clock.now(),
+                            errorCode = error.code,
+                            errorCategory = error.category,
+                        )
                         log(LogLevel.WARN, "step failed: ${error.code}${error.detail?.let { " ($it)" } ?: ""}", index, attempt, error.code)
                         ports.store.updateStepAttempt(attemptRow)
                         flushLogs()
@@ -561,7 +574,10 @@ class MacroExecutor(
                 errorCategory = error?.category,
                 errorDetail = error?.detail,
             )
-            error?.let { log(if (state == ExecutionState.COMPLETED) LogLevel.INFO else LogLevel.WARN, "finished ${record.state}: ${it.code}", null, null, it.code) }
+            error?.let {
+                val level = if (state == ExecutionState.COMPLETED) LogLevel.INFO else LogLevel.WARN
+                log(level, "finished ${record.state}: ${it.code}", null, null, it.code)
+            }
                 ?: log(LogLevel.INFO, "finished ${record.state}", null)
             flushLogs()
             ports.store.update(record)

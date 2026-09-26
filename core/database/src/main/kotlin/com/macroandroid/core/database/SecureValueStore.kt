@@ -22,7 +22,14 @@ class SecureValueStore @Inject constructor(
     private val cipher: SecureValueCipher,
 ) {
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun put(macroId: String, stepId: String, param: String, plaintext: String, now: Long, existingId: String? = null): AppResult<String> {
+    suspend fun put(
+        macroId: String,
+        stepId: String,
+        param: String,
+        plaintext: String,
+        now: Long,
+        existingId: String? = null,
+    ): AppResult<String> {
         val id = existingId ?: Uuid.random().toString()
         return cipher.encrypt(plaintext, aad(macroId, stepId, param)).flatMap { enc ->
             dao.upsertSecureValue(

@@ -142,7 +142,10 @@ object LeafActions {
             if (satisfied) return ActionResult.Success("${a.selector.describe()} is ${a.state.name.lowercase()}")
             if (ctx.clock.now() >= deadline) {
                 return ActionResult.Failure(
-                    AppError(if (a.state == NodeState.PRESENT) ErrorCode.NODE_NOT_FOUND else ErrorCode.NODE_NOT_VISIBLE, a.selector.describe()),
+                    AppError(
+                        if (a.state == NodeState.PRESENT) ErrorCode.NODE_NOT_FOUND else ErrorCode.NODE_NOT_VISIBLE,
+                        a.selector.describe(),
+                    ),
                 )
             }
             delay(POLL_INTERVAL)

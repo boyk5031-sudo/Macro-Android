@@ -31,14 +31,26 @@ class ExecutionNotifications @Inject constructor(
     fun ensureChannels() {
         val nm = context.getSystemService<NotificationManager>() ?: return
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_PROGRESS, context.getString(R.string.automation_android_channel_progress), NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(
+                CHANNEL_PROGRESS,
+                context.getString(R.string.automation_android_channel_progress),
+                NotificationManager.IMPORTANCE_LOW,
+            )
                 .apply { setShowBadge(false) },
         )
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ATTENTION, context.getString(R.string.automation_android_channel_attention), NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(
+                CHANNEL_ATTENTION,
+                context.getString(R.string.automation_android_channel_attention),
+                NotificationManager.IMPORTANCE_HIGH,
+            ),
         )
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_RESULTS, context.getString(R.string.automation_android_channel_results), NotificationManager.IMPORTANCE_DEFAULT),
+            NotificationChannel(
+                CHANNEL_RESULTS,
+                context.getString(R.string.automation_android_channel_results),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ),
         )
     }
 

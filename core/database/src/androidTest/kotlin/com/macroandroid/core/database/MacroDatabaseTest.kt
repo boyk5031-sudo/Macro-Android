@@ -64,7 +64,11 @@ class MacroDatabaseTest {
         dao.insert(execution("e2", state = "RUNNING", owner = "live"))
         dao.insert(execution("e3", state = "COMPLETED", owner = "dead"))
         dao.upsertStep(ExecutionStepEntity("e1", "s1", 0, 1, "wait", "RUNNING", 1L, null, null, null, null))
-        dao.insertLogs(listOf(LogEntryEntity(executionId = "e1", at = 1L, level = "INFO", stepIndex = 0, attempt = 1, message = "x", errorCode = null)))
+        dao.insertLogs(
+            listOf(
+                LogEntryEntity(executionId = "e1", at = 1L, level = "INFO", stepIndex = 0, attempt = 1, message = "x", errorCode = null),
+            ),
+        )
 
         assertThat(dao.interruptOrphans("live", 100L, "CANCELLED_PROCESS_DEATH")).isEqualTo(1)
         assertThat(dao.cancelOrphanSteps(100L)).isEqualTo(1)
