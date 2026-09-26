@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.macro.android.application)
     alias(libs.plugins.macro.android.compose)
@@ -5,8 +7,33 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+/*
+ * Release signing (docs/phase-10-hardening-and-release.md §3): reads `keystore.properties` at the repo root when
+ * present (never committed; see .gitignore) or the equivalent environment variables in CI. Without either, the
+ * release build is produced unsigned so CI can still exercise R8.
+ */
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun signingValue(key: String): String? = keystoreProps.getProperty(key) ?: System.getenv(key.uppercase().replace('.', '_'))
+val hasReleaseSigning = signingValue("release.storeFile") != null
+
 android {
     namespace = "com.macroandroid.app"
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(signingValue("release.storeFile")!!)
+                storePassword = signingValue("release.storePassword")
+                keyAlias = signingValue("release.keyAlias")
+                keyPassword = signingValue("release.keyPassword")
+                enableV3Signing = true
+                enableV4Signing = true
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "com.macroandroid"
@@ -23,7 +50,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signing is configured from CI secrets / local keystore.properties in release prep; unsigned otherwise.
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
 

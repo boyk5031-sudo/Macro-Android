@@ -31,19 +31,30 @@ app
 
 ### 2.2 Module responsibilities and allowed dependencies
 
-| Module | May depend on | Must not depend on | Public surface |
-|---|---|---|---|
-| `app` | everything except `core:testing` in main | — | `MacroApplication`, `MainActivity`, `AppNavHost`, Hilt root |
-| `feature:*` | `core:*`, `automation:engine`; `feature:execution` may depend on `automation:android`; `feature:macros` → `feature:execution` (for step test/run) only via interface in `core:common`? — No: features do **not** depend on each other. Cross-feature actions go through `core:common` interfaces (`MacroRunner`, `ConsentGate`) bound in `app` | other `feature:*`, `app` | Navigation entry (`fun NavGraphBuilder.xxxGraph(...)`) + route objects |
-| `automation:engine` | `core:common`, kotlinx (coroutines, serialization, datetime) | any Android API (`android.*`, `androidx.*`) | model, `MacroValidator`, `MacroExecutor`, `Action`/`ActionContext` interfaces, `ExecutionEvent` |
-| `automation:android` | `automation:engine`, `core:common`, `core:database`, `core:security`, AndroidX core | `feature:*`, `app` | `AndroidActionRegistry`, `MacroAccessibilityService`, `AccessibilityGateway`, `ForegroundGate` |
-| `core:database` | `core:common`, `core:security`, Room | features | entities, DAOs, `MacroDatabase`, repositories' data sources |
-| `core:datastore` | `core:common` | — | `UserPreferencesRepository` |
-| `core:security` | `core:common` | — | `SecureValueCipher`, `Sha256` |
-| `core:ui` | `core:common`, Compose | database/datastore | theme, components, `WindowSizeClass` utils |
-| `core:common` | kotlinx | Android (except `androidx.annotation`) | `AppResult`, `ErrorCode`, `AppDispatchers`, `Clock`, `Redactor`, `Logger` |
+Enforced by `checkModuleBoundaries` (`build-logic/convention/src/main/kotlin/com/macroandroid/buildlogic/ModuleBoundaries.kt`).
+The table is the rule set as implemented.
 
-The dependency direction is enforced by a Gradle verification task in Phase 2 (`checkModuleBoundaries`) that fails when a forbidden project dependency is declared.
+| Module | May depend on (project modules) | Public surface |
+|---|---|---|
+| `app` | anything except `core:testing` in `main` | `MacroApplication` (Hilt root, WorkManager `Configuration.Provider`), `MainActivity`, `MacroApp` nav shell, `AppShortcuts` (binds `ShortcutsContract`), `IntentRoutes` |
+| `feature:execution` | `core:*`, `automation:engine`, `automation:android` (pause/resume/cancel need the runner directly) | `executionGraph`, `ExecutionsDestination`, `ExecutionDetailDestination`, `EXECUTION_DEEP_LINK` |
+| other `feature:*` | `core:*`, `automation:engine` — never another feature | `xxxGraph(...)` + `@Serializable` route objects; cross-feature actions go through `core:common` contracts |
+| `automation:android` | `automation:engine`, `core:common`, `core:database`, `core:security`, `core:datastore` | `MacroRunner`, `MacroAccessibilityService`, `AccessibilityConsent`, `WorkManagerScheduler`, `ScheduleWorker`, `BootCompletedReceiver`; binds `MacroRunnerContract`, `SchedulerContract`, `ConsentContract`, `AuditContract` |
+| `automation:engine` | `core:common` only — pure Kotlin/JVM, no `android.*`/`androidx.*` | model, `MacroValidator`, `MacroExecutor`, `NextRunCalculator`, serialization/migrations |
+| `core:database` | `core:common`, `core:security`, `automation:engine` (entities map engine models) | repositories (`MacroRepository`, `ExecutionRepository`, `ScheduleRepository`), `SecureValueStore` |
+| `core:testing` | `core:*`, `automation:engine` (+ its test fixtures) | test doubles, rules |
+| `core:security`, `core:datastore`, `core:ui`, `core:platform` | `core:common` | cipher/hash; `UserPreferencesRepository`; theme + components; `AndroidLogger` |
+| `core:common` | nothing | `AppResult`, `ErrorCode`, `AppDispatchers`, `Logger`, contracts |
+
+Contracts in `core/common/contract/Contracts.kt` and where they are bound:
+
+| Contract | Bound in | Used by |
+|---|---|---|
+| `MacroRunnerContract` | `automation:android` | `feature:macros`, `feature:apps` |
+| `SchedulerContract` | `automation:android` | `feature:scheduling`, `app` (startup reconcile) |
+| `ConsentContract`, `AuditContract` | `automation:android` | `feature:settings`, `feature:macros`, `feature:apkimport`, `app` |
+| `MacroUsageContract` | `feature:macros` | `feature:apps` |
+| `ShortcutsContract` | `app` | `feature:apps`, `feature:macros` |
 
 ## 3. Layering inside a feature
 
