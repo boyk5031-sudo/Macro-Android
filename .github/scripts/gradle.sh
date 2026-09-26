@@ -13,8 +13,13 @@ if [ "$status" -ne 0 ]; then
   grep -E '^(e|w): ' "$log" | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | sort -u | head -80 \
     | awk 'BEGIN{buf="";n=1} {line=$0; gsub(/::/," ",line); if (length(buf)+length(line)+3>3500){printf "::notice title=kotlin-diagnostics %d::%s\n",n,buf; buf="";n++} buf=(buf==""?line:buf " | " line)} END{if(buf!="")printf "::notice title=kotlin-diagnostics %d::%s\n",n,buf}'
   # Compiler errors / warnings-as-errors / configuration problems.
+  # The "What went wrong" block first: it is the authoritative failure reason and must never be crowded out.
+  awk '/^FAILURE:|^\* What went wrong/{p=1} p{print NR": "$0; n++} n>=40{exit}' "$log" \
+    | grep -vE 'at org\.|at java\.|at kotlin\.' | while IFS= read -r line; do
+        printf '::error title=%s-failure::%s\n' "$name" "${line//::/ }"
+      done
   grep -nE '^e: |error:|Error:|FAILURE:|What went wrong|Caused by:|\* Exception is|Could not|Unresolved|Execution failed|> Task .* FAILED|Failed to|has been compiled|problems? (were|was) found|compileDebugKotlin|Unknown Kotlin JVM target|DSL element|Expecting|Cannot|failed;' "$log" \
-    | grep -vE 'Caused by: org.gradle|at org\.|at java\.|at kotlin\.' \
+    | grep -vE 'Caused by: org.gradle|at org\.|at java\.|at kotlin\.|UP-TO-DATE|FROM-CACHE|NO-SOURCE' \
     | head -60 | while IFS= read -r line; do
         # sanitise :: for annotation syntax
         printf '::error title=%s::%s\n' "$name" "${line//::/ }"

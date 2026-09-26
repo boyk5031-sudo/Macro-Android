@@ -5,7 +5,13 @@ import os
 import xml.etree.ElementTree as ET
 
 issues = []
-for path in glob.glob("**/build/reports/lint-results-*.xml", recursive=True):
+reports = sorted(glob.glob("**/build/reports/lint-results-*.xml", recursive=True))
+print(f"::notice title=lint reports::{len(reports)} report(s): " + ", ".join(reports[:40]))
+for path in glob.glob("**/build/reports/lint-results-*.txt", recursive=True):
+    with open(path, errors="replace") as f:
+        body = " | ".join(line.rstrip() for line in f.readlines()[:120] if line.strip())
+    print(f"::notice title=lint text {path.split('/build/')[0]}::{body[:3500]}")
+for path in reports:
     try:
         root = ET.parse(path).getroot()
     except ET.ParseError:

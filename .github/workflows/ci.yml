@@ -74,7 +74,7 @@ jobs:
 
       - name: Lint
         id: lint
-        if: steps.assemble.outcome == 'success'
+        if: ${{ !cancelled() && steps.assemble.outcome == 'success' }}
         shell: bash
         run: .github/scripts/gradle.sh lint lintDebug --continue
 
@@ -84,17 +84,17 @@ jobs:
         run: python3 .github/scripts/lint_summary.py
 
       - name: Module boundaries
-        if: steps.assemble.outcome == 'success'
+        if: ${{ !cancelled() && steps.assemble.outcome == 'success' }}
         shell: bash
         run: .github/scripts/gradle.sh boundaries checkModuleBoundaries
 
       - name: Forbidden permissions (merged manifest)
-        if: steps.assemble.outcome == 'success'
+        if: ${{ !cancelled() && steps.assemble.outcome == 'success' }}
         shell: bash
         run: .github/scripts/gradle.sh permissions :app:checkDebugForbiddenPermissions
 
       - name: Assemble release (unsigned, R8)
-        if: steps.assemble.outcome == 'success'
+        if: ${{ !cancelled() && steps.assemble.outcome == 'success' }}
         shell: bash
         run: .github/scripts/gradle.sh assemble-release assembleRelease
 
