@@ -42,7 +42,10 @@ internal fun ImportPreviewDialog(
     val importable = preview.candidates.count { it.issues.isEmpty() && choices[it.macro.id] != ImportConflictChoice.SKIP }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(pluralStringResource(R.plurals.macro_import_preview_title, preview.candidates.size, preview.candidates.size, preview.schemaVersion)) },
+        title = {
+            val count = preview.candidates.size
+            Text(pluralStringResource(R.plurals.macro_import_preview_title, count, count, preview.schemaVersion))
+        },
         text = {
             LazyColumn(Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(preview.candidates, key = { it.macro.id.value }) { c ->
