@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="apps_title">Installed apps</string>
+    <string name="apps_search_hint">Search apps</string>
+    <string name="apps_filter_favorites">Favorites</string>
+    <string name="apps_filter_system">System apps</string>
+    <string name="apps_sort">Sort</string>
+    <string name="apps_sort_label">Name A–Z</string>
+    <string name="apps_sort_installed">Recently installed</string>
+    <string name="apps_sort_updated">Recently updated</string>
+    <string name="apps_sort_favorites">Favorites first</string>
+    <string name="apps_empty_title">No apps to show</string>
+    <string name="apps_empty_description">Only apps with a launcher icon that are visible to this app are listed. Restricted profiles and package-visibility rules can hide apps.</string>
+    <string name="apps_empty_filtered">No apps match your search or filters.</string>
+    <string name="apps_help">Learn more</string>
+    <string name="apps_launch">Launch</string>
+    <string name="apps_favorite_add">Add to favorites</string>
+    <string name="apps_favorite_remove">Remove from favorites</string>
+    <string name="apps_pin">Add to Home screen</string>
+    <string name="apps_pin_unsupported">Your launcher does not support pinned shortcuts</string>
+    <string name="apps_pin_requested">Shortcut requested for %1$s</string>
+    <string name="apps_launched">Opening %1$s</string>
+    <string name="apps_uninstalled_chip">Uninstalled</string>
+    <string name="apps_system_chip">System</string>
+    <string name="apps_disabled_chip">Disabled</string>
+    <string name="apps_remove_ghost">Remove</string>
+    <string name="apps_detail_title">App details</string>
+    <string name="apps_detail_package">Package</string>
+    <string name="apps_detail_version">Version</string>
+    <string name="apps_detail_version_value">%1$s (%2$d)</string>
+    <string name="apps_detail_installed">First installed</string>
+    <string name="apps_detail_updated">Last updated</string>
+    <string name="apps_detail_enabled">Enabled</string>
+    <string name="apps_detail_system">System app</string>
+    <string name="apps_detail_macros">Macros using this app</string>
+    <string name="apps_detail_open_settings">Open system app info</string>
+    <string name="apps_detail_not_found">This app is no longer installed.</string>
+    <string name="apps_yes">Yes</string>
+    <string name="apps_no">No</string>
+    <string name="apps_refresh">Refresh</string>
+    <string name="apps_count">%1$d apps</string>
+</resources>

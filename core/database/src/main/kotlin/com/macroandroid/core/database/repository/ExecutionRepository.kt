@@ -129,7 +129,7 @@ class RoomExecutionRepository @Inject constructor(
         rows.map {
             AuditEntry(
                 at = Instant.fromEpochMilliseconds(it.at),
-                kind = runCatching { AuditKind.valueOf(it.kind) }.getOrDefault(AuditKind.DATA_WIPED),
+                kind = runCatching { AuditKind.valueOf(it.kind) }.getOrDefault(AuditKind.OTHER),
                 subject = it.subject,
                 detail = it.detail,
             )

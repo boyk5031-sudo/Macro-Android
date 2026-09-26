@@ -42,6 +42,11 @@ enum class AuditKind {
     DATA_WIPED,
     A11Y_SERVICE_CONNECTED,
     A11Y_SERVICE_DISCONNECTED,
+    APP_LAUNCH_FAILED,
+    SHORTCUT_PINNED,
+    SHORTCUT_LAUNCHED,
+    /** Kinds recorded by features via [com.macroandroid.core.common.contract.AuditContract] that are not modelled yet. */
+    OTHER,
 }
 
 data class AuditEntry(val at: Instant, val kind: AuditKind, val subject: String?, val detail: String?)

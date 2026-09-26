@@ -125,6 +125,8 @@ class AppsViewModel @Inject constructor(
 
     fun launchIntent(app: InstalledApp) = repository.launchIntent(app.packageName)
 
+    suspend fun icon(packageName: String, sizePx: Int) = repository.icon(packageName, sizePx)
+
     private fun matches(app: InstalledApp, query: String): Boolean {
         if (query.isBlank()) return true
         val q = InstalledAppsDataSource.foldDiacritics(query.trim())
