@@ -30,10 +30,10 @@
     <string name="exe_queued_at">Queued %1$s</string>
     <string name="exe_started_at">Started %1$s</string>
     <string name="exe_ended_at">Ended %1$s</string>
-    <string name="exe_progress">%1$d of %2$d steps completed · %3$d retries</string>
+    <string name="exe_progress">Steps completed: %1$d/%2$d · Retries: %3$d</string>
     <string name="exe_blocked_reason">Waiting: %1$s</string>
-    <string name="exe_steps_section">Steps (%1$d attempts)</string>
-    <string name="exe_log_section">Log (%1$d lines)</string>
+    <string name="exe_steps_section">Step attempts: %1$d</string>
+    <string name="exe_log_section">Log lines: %1$d</string>
     <string name="exe_attempt">attempt %1$d</string>
 
     <string name="exe_state_queued">Queued</string>

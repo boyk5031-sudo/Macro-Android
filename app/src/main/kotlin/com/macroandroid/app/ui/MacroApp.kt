@@ -11,7 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -48,7 +48,7 @@ import com.macroandroid.feature.trigger.ui.triggerGraph
 fun MacroApp(appState: MacroAppState, mainState: MainUiState, viewModel: MainViewModel) {
     val navController = appState.navController
     val snackbar = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val pendingRun by viewModel.pendingRun.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {
@@ -57,7 +57,7 @@ fun MacroApp(appState: MacroAppState, mainState: MainUiState, viewModel: MainVie
                 is MainNavEvent.OpenExecution -> navController.navigateToExecution(e.executionId)
                 MainNavEvent.NewMacro -> navController.navigateToMacroEditor(null)
                 MainNavEvent.OpenRuns -> appState.navigateToTopLevel(TopLevelDestination.RUNS)
-                is MainNavEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
+                is MainNavEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
             }
         }
     }

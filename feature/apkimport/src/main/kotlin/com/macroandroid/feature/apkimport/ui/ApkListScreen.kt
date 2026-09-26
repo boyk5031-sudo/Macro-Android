@@ -42,6 +42,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -76,7 +77,7 @@ fun ApkListRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val listState = rememberLazyListState()
     var highlightId by remember { mutableStateOf<String?>(null) }
     var pendingDelete by remember { mutableStateOf<ImportedApk?>(null) }
@@ -90,10 +91,10 @@ fun ApkListRoute(
             when (event) {
                 is ApkListEvent.ImportFinished ->
                     snackbar.showSnackbar(
-                        context.getString(R.string.apk_import_summary, event.imported, event.invalid, event.rejected.size),
+                        resources.getString(R.string.apk_import_summary, event.imported, event.invalid, event.rejected.size),
                     )
                 is ApkListEvent.HighlightExisting -> highlightId = event.id
-                is ApkListEvent.Deleted -> snackbar.showSnackbar(context.getString(R.string.apk_deleted, event.name))
+                is ApkListEvent.Deleted -> snackbar.showSnackbar(resources.getString(R.string.apk_deleted, event.name))
             }
         }
     }

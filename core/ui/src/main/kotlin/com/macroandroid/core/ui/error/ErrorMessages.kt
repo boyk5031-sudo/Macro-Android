@@ -64,6 +64,23 @@ object ErrorMessages {
         ErrorCode.MACRO_NOT_FOUND, ErrorCode.SCHEDULE_NOT_FOUND, ErrorCode.EXECUTION_NOT_FOUND, ErrorCode.APK_NOT_FOUND,
         ErrorCode.TRIGGER_NOT_FOUND,
         -> R.string.err_not_found
+        ErrorCode.CANCELLED_BY_USER -> R.string.err_cancelled_user
+        ErrorCode.CANCELLED_PROCESS_DEATH, ErrorCode.CANCELLED_REBOOT, ErrorCode.CANCELLED_SUPERSEDED -> R.string.err_interrupted
+        else -> triggerTitleRes(code) ?: when (code.category) {
+            ErrorCategory.VALIDATION -> R.string.err_validation_generic
+            ErrorCategory.PERMISSION -> R.string.err_permission_generic
+            ErrorCategory.PRECONDITION -> R.string.err_precondition_generic
+            ErrorCategory.TARGET_UI -> R.string.err_target_generic
+            ErrorCategory.TRANSIENT -> R.string.err_transient_generic
+            ErrorCategory.POLICY -> R.string.err_policy_generic
+            ErrorCategory.DATA -> R.string.err_data_generic
+            ErrorCategory.INTERNAL -> R.string.err_internal_generic
+            ErrorCategory.CANCELLED -> R.string.err_cancelled_user
+        }
+    }
+
+    /** Trigger Area codes (Phase 12); null for every other code. */
+    private fun triggerTitleRes(code: ErrorCode): Int? = when (code) {
         ErrorCode.TRIGGER_NO_TARGETS -> R.string.err_trigger_no_targets
         ErrorCode.TRIGGER_AREA_INVALID -> R.string.err_trigger_area_invalid
         ErrorCode.TRIGGER_COORDINATE_INVALID -> R.string.err_trigger_coordinate_invalid
@@ -77,19 +94,7 @@ object ErrorMessages {
         ErrorCode.TRIGGER_DISABLED -> R.string.err_trigger_disabled
         ErrorCode.TRIGGER_BUSY -> R.string.err_trigger_busy
         ErrorCode.TRIGGER_COOLDOWN -> R.string.err_trigger_cooldown
-        ErrorCode.CANCELLED_BY_USER -> R.string.err_cancelled_user
-        ErrorCode.CANCELLED_PROCESS_DEATH, ErrorCode.CANCELLED_REBOOT, ErrorCode.CANCELLED_SUPERSEDED -> R.string.err_interrupted
-        else -> when (code.category) {
-            ErrorCategory.VALIDATION -> R.string.err_validation_generic
-            ErrorCategory.PERMISSION -> R.string.err_permission_generic
-            ErrorCategory.PRECONDITION -> R.string.err_precondition_generic
-            ErrorCategory.TARGET_UI -> R.string.err_target_generic
-            ErrorCategory.TRANSIENT -> R.string.err_transient_generic
-            ErrorCategory.POLICY -> R.string.err_policy_generic
-            ErrorCategory.DATA -> R.string.err_data_generic
-            ErrorCategory.INTERNAL -> R.string.err_internal_generic
-            ErrorCategory.CANCELLED -> R.string.err_cancelled_user
-        }
+        else -> null
     }
 
     @StringRes

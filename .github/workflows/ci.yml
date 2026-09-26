@@ -130,8 +130,15 @@ jobs:
                           msg = ' '.join(msg.split())[:600]
                           failed.append(f"{tc.get('classname')}.{tc.get('name')} :: {msg}")
           print(f"::notice title=unit-tests::total={tests} failures={fails} errors={errs} skipped={skips}")
-          for name in failed[:50]:
-              print(f"::error title=test-failed::{name}")
+          # Packed: GitHub keeps only 10 annotations per level per step.
+          buf, n = "", 1
+          for name in failed[:120]:
+              line = name.replace("::", " ").replace("%", "%25")
+              if len(buf) + len(line) + 3 > 3500:
+                  print(f"::error title=test-failed {n}::{buf}"); buf, n = "", n + 1
+              buf = line if not buf else buf + "%0A" + line
+          if buf:
+              print(f"::error title=test-failed {n}::{buf}")
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
               out.write(f"## Unit tests\n\n| total | failures | errors | skipped |\n|---|---|---|---|\n| {tests} | {fails} | {errs} | {skips} |\n")
               if failed:

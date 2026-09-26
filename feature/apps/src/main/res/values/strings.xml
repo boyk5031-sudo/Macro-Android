@@ -38,6 +38,9 @@
     <string name="apps_yes">Yes</string>
     <string name="apps_no">No</string>
     <string name="apps_refresh">Refresh</string>
-    <string name="apps_count">%1$d apps</string>
+    <plurals name="apps_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
     <string name="apps_apk_files">APK files</string>
 </resources>

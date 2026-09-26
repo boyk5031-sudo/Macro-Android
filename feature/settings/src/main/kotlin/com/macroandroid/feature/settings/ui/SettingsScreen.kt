@@ -28,7 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -63,7 +63,7 @@ fun SettingsRoute(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     var confirmClear by remember { mutableStateOf(false) }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
@@ -72,10 +72,10 @@ fun SettingsRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             val text = when (e) {
-                SettingsEvent.HistoryCleared -> context.getString(R.string.set_history_cleared)
-                SettingsEvent.OnboardingReset -> context.getString(R.string.set_onboarding_reset_done)
-                SettingsEvent.DiagnosticsExported -> context.getString(R.string.set_diagnostics_exported)
-                is SettingsEvent.Error -> context.getString(ErrorMessages.titleRes(e.error))
+                SettingsEvent.HistoryCleared -> resources.getString(R.string.set_history_cleared)
+                SettingsEvent.OnboardingReset -> resources.getString(R.string.set_onboarding_reset_done)
+                SettingsEvent.DiagnosticsExported -> resources.getString(R.string.set_diagnostics_exported)
+                is SettingsEvent.Error -> resources.getString(ErrorMessages.titleRes(e.error))
             }
             snackbar.showSnackbar(text)
         }

@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -81,6 +82,7 @@ fun TriggerListRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     var pendingDelete by remember { mutableStateOf<TriggerId?>(null) }
     var pendingExport by remember { mutableStateOf<String?>(null) }
@@ -109,13 +111,13 @@ fun TriggerListRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             when (e) {
-                is TriggerListEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
+                is TriggerListEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
                 is TriggerListEvent.Exported -> {
                     pendingExport = e.json
                     exportLauncher.launch(EXPORT_NAME)
                 }
                 is TriggerListEvent.Imported ->
-                    snackbar.showSnackbar(context.resources.getQuantityString(R.plurals.trg_imported, e.count, e.count))
+                    snackbar.showSnackbar(resources.getQuantityString(R.plurals.trg_imported, e.count, e.count))
                 is TriggerListEvent.Duplicated -> onOpenEditor(e.id)
             }
         }

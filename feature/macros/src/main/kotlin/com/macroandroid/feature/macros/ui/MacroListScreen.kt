@@ -51,10 +51,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.macroandroid.automation.model.MacroId
@@ -97,6 +99,7 @@ fun MacroListRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val busy by viewModel.isBusy.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     var pendingDelete by remember { mutableStateOf<Pair<MacroId, String>?>(null) }
     var pendingRun by remember { mutableStateOf<Pair<MacroId, String>?>(null) }
@@ -117,18 +120,18 @@ fun MacroListRoute(
             when (e) {
                 is MacroListEvent.Started -> {
                     val r = snackbar.showSnackbar(
-                        context.getString(R.string.macro_run_started, e.name),
-                        actionLabel = context.getString(R.string.macro_open_execution),
+                        resources.getString(R.string.macro_run_started, e.name),
+                        actionLabel = resources.getString(R.string.macro_open_execution),
                     )
                     if (r == androidx.compose.material3.SnackbarResult.ActionPerformed) onOpenExecution(e.executionId)
                 }
-                is MacroListEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
-                is MacroListEvent.Deleted -> snackbar.showSnackbar(context.getString(R.string.macro_deleted, e.name))
-                is MacroListEvent.Duplicated -> snackbar.showSnackbar(context.getString(R.string.macro_duplicated, e.name))
+                is MacroListEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
+                is MacroListEvent.Deleted -> snackbar.showSnackbar(resources.getString(R.string.macro_deleted, e.name))
+                is MacroListEvent.Duplicated -> snackbar.showSnackbar(resources.getString(R.string.macro_duplicated, e.name))
                 is MacroListEvent.Exported ->
-                    snackbar.showSnackbar(context.resources.getQuantityString(R.plurals.macro_exported, e.count, e.count))
+                    snackbar.showSnackbar(resources.getQuantityString(R.plurals.macro_exported, e.count, e.count))
                 is MacroListEvent.Imported ->
-                    snackbar.showSnackbar(context.resources.getQuantityString(R.plurals.macro_imported, e.count, e.count))
+                    snackbar.showSnackbar(resources.getQuantityString(R.plurals.macro_imported, e.count, e.count))
                 is MacroListEvent.ConfirmRun -> pendingRun = e.macroId to e.name
             }
         }
@@ -249,7 +252,7 @@ fun MacroListRoute(
 
 private fun appVersionCode(context: Context): Int = try {
     val info = context.packageManager.getPackageInfo(context.packageName, 0)
-    (info.longVersionCode and 0xFFFF_FFFFL).toInt()
+    (PackageInfoCompat.getLongVersionCode(info) and 0xFFFF_FFFFL).toInt()
 } catch (_: PackageManager.NameNotFoundException) {
     0
 }

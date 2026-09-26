@@ -27,7 +27,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): MacroDatabase =
         Room.databaseBuilder(context, MacroDatabase::class.java, MacroDatabase.NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-            .addMigrations(*Migrations.ALL)
+            .apply { Migrations.ALL.forEach { addMigrations(it) } }
             // No destructive fallback: a missing migration must fail loudly in CI's migration test, not wipe user data.
             .build()
 

@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -64,7 +65,7 @@ fun ExecutionDetailRoute(
     viewModel: ExecutionDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         viewModel.export(uri)
@@ -72,12 +73,12 @@ fun ExecutionDetailRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             when (e) {
-                is ExecutionDetailEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
-                ExecutionDetailEvent.Exported -> snackbar.showSnackbar(context.getString(R.string.exe_exported))
+                is ExecutionDetailEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
+                ExecutionDetailEvent.Exported -> snackbar.showSnackbar(resources.getString(R.string.exe_exported))
                 is ExecutionDetailEvent.Rerun -> {
                     val r = snackbar.showSnackbar(
-                        context.getString(R.string.exe_rerun_started),
-                        actionLabel = context.getString(R.string.exe_open),
+                        resources.getString(R.string.exe_rerun_started),
+                        actionLabel = resources.getString(R.string.exe_open),
                     )
                     if (r == SnackbarResult.ActionPerformed) onOpenExecution(e.executionId)
                 }

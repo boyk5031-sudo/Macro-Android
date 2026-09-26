@@ -1,39 +1,49 @@
 #!/usr/bin/env python3
-"""Turns every Android Lint XML report into GitHub annotations (one per issue) plus a step summary."""
+"""Packs Android Lint findings from every module into a handful of annotations plus the step summary.
+
+Reads the text reports (`lint-results-*.txt`) and, when present, the XML reports. GitHub keeps only 10
+annotations per level per step, so findings are packed into <=3500-char notices ordered by module.
+"""
 import glob
 import os
-import xml.etree.ElementTree as ET
+import re
+from collections import Counter
 
-issues = []
-reports = sorted(glob.glob("**/build/reports/lint-results-*.xml", recursive=True))
-print(f"::notice title=lint reports::{len(reports)} report(s): " + ", ".join(reports[:40]))
-for path in glob.glob("**/build/reports/lint-results-*.txt", recursive=True):
-    with open(path, errors="replace") as f:
-        body = " | ".join(line.rstrip() for line in f.readlines()[:120] if line.strip())
-    print(f"::notice title=lint text {path.split('/build/')[0]}::{body[:3500]}")
-for path in reports:
-    try:
-        root = ET.parse(path).getroot()
-    except ET.ParseError:
-        continue
+HEADER = re.compile(r"^(?P<file>\S.*?):(?P<line>\d+): (?P<sev>Error|Warning|Fatal): (?P<msg>.*) \[(?P<id>[A-Za-z]+)(?: from [^\]]+)?\]$")
+ROOT = os.getcwd() + "/"
+
+findings = []  # (module, id, sev, file, line, msg)
+for path in sorted(glob.glob("**/build/reports/lint-results-*.txt", recursive=True)):
     module = path.split("/build/")[0]
-    for issue in root.findall("issue"):
-        loc = issue.find("location")
-        file = loc.get("file", "?") if loc is not None else "?"
-        line = loc.get("line", "0") if loc is not None else "0"
-        issues.append((issue.get("severity", "?"), issue.get("id", "?"), module, file, line, issue.get("message", "")))
+    with open(path, errors="replace") as f:
+        for raw in f:
+            m = HEADER.match(raw.rstrip().replace(ROOT, ""))
+            if m:
+                findings.append((module, m["id"], m["sev"], m["file"], m["line"], m["msg"]))
 
-by_id = {}
-for sev, iid, module, file, line, msg in issues:
-    by_id[iid] = by_id.get(iid, 0) + 1
-    level = "error" if sev in ("Error", "Fatal") else "warning"
-    short = os.path.relpath(file) if os.path.isabs(file) else file
-    print(f"::{level} title=lint {iid}::{module}: {short}:{line} {' '.join(msg.split())[:500]}")
+seen = set()
+unique = [x for x in findings if not (x[:5] in seen or seen.add(x[:5]))]
+by_id = Counter(x[1] for x in unique)
 
-print(f"::notice title=lint total={len(issues)}::" + ", ".join(f"{k}={v}" for k, v in sorted(by_id.items())))
-summary = os.environ.get("GITHUB_STEP_SUMMARY")
-if summary:
-    with open(summary, "a") as out:
-        out.write(f"## Lint\n\n{len(issues)} issue(s)\n\n")
-        for sev, iid, module, file, line, msg in issues[:200]:
-            out.write(f"- **{iid}** ({sev}) `{module}` {file}:{line} — {msg}\n")
+
+def emit(level, title, lines):
+    buf, n = "", 1
+    for line in lines:
+        line = line.replace("::", " ").replace("%", "%25")
+        if len(buf) + len(line) + 3 > 3500:
+            print(f"::{level} title={title} {n}::{buf}")
+            buf, n = "", n + 1
+        buf = line if not buf else buf + "%0A" + line
+    if buf:
+        print(f"::{level} title={title} {n}::{buf}")
+
+
+summary = [f"lint findings: {len(unique)} in {len(set(x[0] for x in unique))} module(s)"]
+summary += [f"  {k}: {v}" for k, v in by_id.most_common()]
+emit("notice", "lint-summary", summary)
+emit("notice", "lint-findings", [f"{m} {f}:{l} [{i}] {msg[:160]}" for (m, i, s, f, l, msg) in unique][:400])
+
+with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a") as out:
+    out.write("## Android Lint\n\n" + "\n".join(f"- {s}" for s in summary) + "\n\n")
+    for (m, i, s, f, l, msg) in unique:
+        out.write(f"- `{m}` `{f}:{l}` **{i}** ({s}) {msg}\n")

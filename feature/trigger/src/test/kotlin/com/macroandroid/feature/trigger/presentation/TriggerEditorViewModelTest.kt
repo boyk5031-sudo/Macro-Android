@@ -70,8 +70,9 @@ class TriggerEditorViewModelTest {
         advanceUntilIdle()
         val s = vm.uiState.value
         assertThat(s.isNew).isTrue()
-        assertThat(s.config!!.targetPoints).isEmpty()
-        assertThat(s.config!!.authoredDisplay.widthPx).isEqualTo(geometry.widthPx)
+        val config = checkNotNull(s.config)
+        assertThat(config.targetPoints).isEmpty()
+        assertThat(config.authoredDisplay.widthPx).isEqualTo(geometry.widthPx)
         assertThat(s.errors.map { it.code }).contains(ErrorCode.NAME_INVALID)
         assertThat(s.canSave).isFalse()
         assertThat(s.apps.map { it.packageName }).containsExactly("com.game")

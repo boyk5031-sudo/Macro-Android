@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -61,13 +62,14 @@ fun AppDetailRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val text = when (event) {
-                is AppsUiEvent.Launched -> context.getString(R.string.apps_launched, event.label)
-                is AppsUiEvent.Message -> context.getString(R.string.apps_pin_requested, event.text)
-                is AppsUiEvent.Error -> context.getString(ErrorMessages.titleRes(event.error))
+                is AppsUiEvent.Launched -> resources.getString(R.string.apps_launched, event.label)
+                is AppsUiEvent.Message -> resources.getString(R.string.apps_pin_requested, event.text)
+                is AppsUiEvent.Error -> resources.getString(ErrorMessages.titleRes(event.error))
             }
             snackbar.showSnackbar(text)
         }

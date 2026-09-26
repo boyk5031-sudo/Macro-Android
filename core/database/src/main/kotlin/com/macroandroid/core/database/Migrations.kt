@@ -20,5 +20,5 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> get() = arrayOf(MIGRATION_1_2)
+    val ALL: List<Migration> get() = listOf(MIGRATION_1_2)
 }

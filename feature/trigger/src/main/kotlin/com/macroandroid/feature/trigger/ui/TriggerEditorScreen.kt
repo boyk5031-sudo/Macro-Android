@@ -56,8 +56,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -93,18 +94,21 @@ fun TriggerEditorRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
+    val resources = LocalResources.current
+    val windowSize = LocalWindowInfo.current.containerSize
     val snackbar = remember { SnackbarHostState() }
 
-    LaunchedEffect(configuration.orientation, configuration.screenWidthDp, configuration.screenHeightDp) {
+    // Re-read the display whenever the window size changes (rotation, fold, resize); the reader itself
+    // returns the full physical display, not the window.
+    LaunchedEffect(windowSize) {
         DisplayGeometryReader.read(context)?.let(viewModel::onGeometry)
     }
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             when (e) {
                 is TriggerEditorEvent.Saved -> onBack()
-                is TriggerEditorEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
-                TriggerEditorEvent.TestSucceeded -> snackbar.showSnackbar(context.getString(R.string.trg_test_done))
+                is TriggerEditorEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
+                TriggerEditorEvent.TestSucceeded -> snackbar.showSnackbar(resources.getString(R.string.trg_test_done))
             }
         }
     }

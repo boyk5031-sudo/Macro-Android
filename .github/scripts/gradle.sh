@@ -1,32 +1,36 @@
 #!/usr/bin/env bash
-# Runs a Gradle invocation, tees output to build/ci-logs/<name>.log, and surfaces the
-# failure diagnostics as GitHub annotations (the hosted log API is not always reachable).
+# Runs a Gradle invocation, tees output to build/ci-logs/<name>.log, and surfaces the failure diagnostics as a
+# small number of PACKED GitHub annotations (GitHub keeps only 10 per level per step and 50 per job, and the
+# hosted log/artifact APIs are not always reachable from where we read results).
 set -uo pipefail
 name="$1"; shift
 mkdir -p build/ci-logs
 log="build/ci-logs/${name}.log"
 ./gradlew "$@" --stacktrace --no-daemon --console=plain 2>&1 | tee "$log"
 status=${PIPESTATUS[0]}
+
+# Emit one annotation per <=3500-char chunk of stdin; newlines become %0A so the block stays readable.
+pack() { # level title
+  awk -v level="$1" -v title="$2" '
+    { gsub(/::/, " ", $0); gsub(/%/, "%25", $0); line=$0
+      if (length(buf) + length(line) + 3 > 3500) { printf "::%s title=%s %d::%s\n", level, title, n, buf; buf=""; n++ }
+      buf = (buf == "" ? line : buf "%0A" line) }
+    BEGIN { n = 1 }
+    END { if (buf != "") printf "::%s title=%s %d::%s\n", level, title, n, buf }'
+}
+
 if [ "$status" -ne 0 ]; then
-  # Kotlin compiler diagnostics first (errors and, because -Werror is on, warnings). GitHub keeps only the first
-  # 10 annotations per level per step, so they are packed into single notice annotations of <=3500 chars each.
-  grep -E '^(e|w): ' "$log" | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | sort -u | head -80 \
-    | awk 'BEGIN{buf="";n=1} {line=$0; gsub(/::/," ",line); if (length(buf)+length(line)+3>3500){printf "::notice title=kotlin-diagnostics %d::%s\n",n,buf; buf="";n++} buf=(buf==""?line:buf " | " line)} END{if(buf!="")printf "::notice title=kotlin-diagnostics %d::%s\n",n,buf}'
-  # Compiler errors / warnings-as-errors / configuration problems.
-  # The "What went wrong" block first: it is the authoritative failure reason and must never be crowded out.
-  awk '/^FAILURE:|^\* What went wrong/{p=1} p{print NR": "$0; n++} n>=40{exit}' "$log" \
-    | grep -vE 'at org\.|at java\.|at kotlin\.' | while IFS= read -r line; do
-        printf '::error title=%s-failure::%s\n' "$name" "${line//::/ }"
-      done
-  grep -nE '^e: |error:|Error:|FAILURE:|What went wrong|Caused by:|\* Exception is|Could not|Unresolved|Execution failed|> Task .* FAILED|Failed to|has been compiled|problems? (were|was) found|compileDebugKotlin|Unknown Kotlin JVM target|DSL element|Expecting|Cannot|failed;' "$log" \
-    | grep -vE 'Caused by: org.gradle|at org\.|at java\.|at kotlin\.|UP-TO-DATE|FROM-CACHE|NO-SOURCE' \
-    | head -60 | while IFS= read -r line; do
-        # sanitise :: for annotation syntax
-        printf '::error title=%s::%s\n' "$name" "${line//::/ }"
-      done
-  # Failing test names.
-  grep -nE 'FAILED$|^ +[A-Za-z0-9_.]+ > .* FAILED' "$log" | head -40 | while IFS= read -r line; do
-    printf '::error title=%s-test::%s\n' "$name" "${line//::/ }"
-  done
+  # 1. Kotlin compiler diagnostics (errors and, because -Werror is on, warnings).
+  grep -E '^(e|w): ' "$log" | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | sort -u | head -120 \
+    | pack error "$name-kotlin"
+  # 2. The authoritative "What went wrong" block(s), without JVM stack frames.
+  awk '/^FAILURE:|^\* What went wrong/{p=1} /^\* Try:/{p=0} p' "$log" | grep -vE '^\s+at ' | head -120 \
+    | pack error "$name-failure"
+  # 3. Failing test names as printed by Gradle.
+  grep -E '^[A-Za-z0-9_.]+ > .* FAILED$|^ +[A-Za-z0-9_.`]+ > .* FAILED$' "$log" | head -60 | pack error "$name-tests"
+  # 4. Other error-ish lines (deduplicated) as a low-priority notice.
+  grep -E 'error:|Error:|Could not|Unresolved|Execution failed|problems? (were|was) found|DSL element|Cannot' "$log" \
+    | grep -vE 'at org\.|at java\.|at kotlin\.|UP-TO-DATE|FROM-CACHE|NO-SOURCE' | sort -u | head -60 \
+    | pack notice "$name-misc"
 fi
 exit "$status"

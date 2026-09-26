@@ -6,10 +6,10 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
+import androidx.core.net.toUri
 import com.macroandroid.automation.android.R
 import com.macroandroid.automation.engine.ExecutionRecord
 import com.macroandroid.automation.model.ExecutionId
@@ -128,7 +128,7 @@ class ExecutionNotifications @Inject constructor(
     }
 
     private fun openExecution(id: ExecutionId): PendingIntent {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("macroandroid://execution/${id.value}"))
+        val intent = Intent(Intent.ACTION_VIEW, "macroandroid://execution/${id.value}".toUri())
             .setPackage(context.packageName)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         return PendingIntent.getActivity(

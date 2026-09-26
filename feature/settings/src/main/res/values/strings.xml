@@ -22,8 +22,8 @@
     <string name="set_verbose">Verbose logging</string>
     <string name="set_verbose_help">Store debug-level entries in execution logs. Log text may include on-screen labels.</string>
     <string name="set_section_retention">History</string>
-    <string name="set_retention_days">Keep history for %1$d days</string>
-    <string name="set_retention_runs">Keep at most %1$d runs</string>
+    <string name="set_retention_days">History retention (days): %1$d</string>
+    <string name="set_retention_runs">History limit (runs): %1$d</string>
     <string name="set_section_privacy">Privacy</string>
     <string name="set_export_secure">Include sensitive values in exports</string>
     <string name="set_export_secure_help">Default for macro exports; you can override per export. Off keeps secrets on this device.</string>

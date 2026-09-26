@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,15 +72,15 @@ fun SchedulesRoute(
     viewModel: SchedulesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     var pendingDelete by remember { mutableStateOf<ScheduleId?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             when (e) {
-                is SchedulesEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
-                SchedulesEvent.Deleted -> snackbar.showSnackbar(context.getString(R.string.sch_deleted))
+                is SchedulesEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
+                SchedulesEvent.Deleted -> snackbar.showSnackbar(resources.getString(R.string.sch_deleted))
             }
         }
     }

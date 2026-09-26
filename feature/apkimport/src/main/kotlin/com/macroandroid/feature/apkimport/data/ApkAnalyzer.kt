@@ -2,6 +2,7 @@ package com.macroandroid.feature.apkimport.data
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.net.Uri
@@ -102,7 +103,7 @@ class ApkAnalyzer @Inject constructor(
     /** Steps 4–5 of FR-APK-2. */
     suspend fun parse(file: File): AppResult<ApkMetadata> = withContext(dispatchers.io) {
         val pm = context.packageManager
-        val flags = PackageManager.GET_SIGNING_CERTIFICATES or PackageManager.GET_META_DATA or PackageManager.GET_PERMISSIONS
+        val flags = signingFlag() or PackageManager.GET_META_DATA or PackageManager.GET_PERMISSIONS
         val info = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pm.getPackageArchiveInfo(file.absolutePath, PackageManager.PackageInfoFlags.of(flags.toLong()))
@@ -121,10 +122,7 @@ class ApkAnalyzer @Inject constructor(
         } catch (_: RuntimeException) {
             null
         }
-        val signers: Array<Signature>? = info.signingInfo?.let { si ->
-            if (si.hasMultipleSigners()) si.apkContentsSigners else si.signingCertificateHistory
-        }
-        val signerDigest = signers?.firstOrNull()?.toByteArray()?.let { MessageDigest.getInstance("SHA-256").digest(it).toHex() }
+        val signerDigest = signers(info)?.firstOrNull()?.toByteArray()?.let { MessageDigest.getInstance("SHA-256").digest(it).toHex() }
         AppResult.ok(
             ApkMetadata(
                 packageName = info.packageName,
@@ -140,19 +138,31 @@ class ApkAnalyzer @Inject constructor(
         )
     }
 
+    /** `GET_SIGNING_CERTIFICATES` exists from API 28; older devices only offer the deprecated `GET_SIGNATURES`. */
+    @Suppress("DEPRECATION")
+    private fun signingFlag(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
+
+    /** Signer certificates in preference order; null when the package info carries none. */
+    @Suppress("DEPRECATION")
+    private fun signers(info: PackageInfo): Array<Signature>? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.let { si -> if (si.hasMultipleSigners()) si.apkContentsSigners else si.signingCertificateHistory }
+        } else {
+            info.signatures
+        }
+
     /** Installed-state facts for FR-APK-4. Returns null when the package is not visible under `<queries>`. */
     fun installed(packageName: String): Pair<Long, String?>? {
         val pm = context.packageManager
         return try {
             val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()))
+                pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(signingFlag().toLong()))
             } else {
                 @Suppress("DEPRECATION")
-                pm.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                pm.getPackageInfo(packageName, signingFlag())
             }
-            val signer = info.signingInfo?.let { si ->
-                (if (si.hasMultipleSigners()) si.apkContentsSigners else si.signingCertificateHistory).firstOrNull()
-            }?.toByteArray()?.let { MessageDigest.getInstance("SHA-256").digest(it).toHex() }
+            val signer = signers(info)?.firstOrNull()?.toByteArray()?.let { MessageDigest.getInstance("SHA-256").digest(it).toHex() }
             PackageInfoCompat.getLongVersionCode(info) to signer
         } catch (_: PackageManager.NameNotFoundException) {
             null

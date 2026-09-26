@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -22,6 +23,7 @@ class CapabilityStatus @Inject constructor(
     private val logger: Logger,
 ) {
     val notificationsEnabled: Boolean get() = NotificationManagerCompat.from(context).areNotificationsEnabled()
+    @get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
     val notificationsNeedRuntimePermission: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     val ignoringBatteryOptimizations: Boolean

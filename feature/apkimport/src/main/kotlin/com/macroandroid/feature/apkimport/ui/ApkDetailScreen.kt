@@ -34,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -61,6 +62,7 @@ fun ApkDetailRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val resources = LocalResources.current
     var confirmDelete by remember { mutableStateOf(false) }
     val reselect = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { viewModel.relink(it) }
 
@@ -69,10 +71,10 @@ fun ApkDetailRoute(
             when (event) {
                 is ApkDetailEvent.ChecksumVerified ->
                     snackbar.showSnackbar(
-                        context.getString(if (event.matches) R.string.apk_checksum_ok else R.string.apk_checksum_mismatch),
+                        resources.getString(if (event.matches) R.string.apk_checksum_ok else R.string.apk_checksum_mismatch),
                     )
-                is ApkDetailEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(event.error)))
-                ApkDetailEvent.Relinked -> snackbar.showSnackbar(context.getString(R.string.apk_relinked))
+                is ApkDetailEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(event.error)))
+                ApkDetailEvent.Relinked -> snackbar.showSnackbar(resources.getString(R.string.apk_relinked))
                 ApkDetailEvent.Deleted -> onBack()
             }
         }

@@ -47,7 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -90,7 +90,7 @@ fun MacroEditorRoute(
     viewModel: MacroEditorViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     var insertTarget by remember { mutableStateOf<InsertTarget?>(null) }
     var editTarget by remember { mutableStateOf<EditTarget?>(null) }
@@ -101,20 +101,20 @@ fun MacroEditorRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { e ->
             when (e) {
-                is MacroEditorEvent.Saved -> snackbar.showSnackbar(context.getString(R.string.macro_saved))
-                is MacroEditorEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(e.error)))
+                is MacroEditorEvent.Saved -> snackbar.showSnackbar(resources.getString(R.string.macro_saved))
+                is MacroEditorEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
                 is MacroEditorEvent.StepRemoved -> {
                     val r = snackbar.showSnackbar(
-                        context.getString(R.string.macro_step_removed),
-                        actionLabel = context.getString(R.string.macro_undo),
+                        resources.getString(R.string.macro_step_removed),
+                        actionLabel = resources.getString(R.string.macro_undo),
                         duration = SnackbarDuration.Short,
                     )
                     if (r == SnackbarResult.ActionPerformed) viewModel.reinsertStep(e.step, e.path, e.index)
                 }
                 is MacroEditorEvent.StepTestStarted -> {
                     val r = snackbar.showSnackbar(
-                        context.getString(R.string.macro_step_test_started),
-                        actionLabel = context.getString(R.string.macro_open_execution),
+                        resources.getString(R.string.macro_step_test_started),
+                        actionLabel = resources.getString(R.string.macro_open_execution),
                     )
                     if (r == SnackbarResult.ActionPerformed) onOpenExecution(e.executionId)
                 }
