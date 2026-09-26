@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_macro"
+        android:shortcutId="new_macro"
+        android:shortcutLongLabel="@string/shortcut_new_macro_long"
+        android:shortcutShortLabel="@string/shortcut_new_macro_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="macroandroid://macro/new"
+            android:targetClass="com.macroandroid.app.MainActivity"
+            android:targetPackage="com.macroandroid" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_macro"
+        android:shortcutId="runs"
+        android:shortcutLongLabel="@string/shortcut_runs_long"
+        android:shortcutShortLabel="@string/shortcut_runs_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="macroandroid://runs"
+            android:targetClass="com.macroandroid.app.MainActivity"
+            android:targetPackage="com.macroandroid" />
+    </shortcut>
+</shortcuts>

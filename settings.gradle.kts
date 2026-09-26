@@ -32,6 +32,7 @@ rootProject.name = "Macro-Android"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 // Modules are added to the build as they are implemented (Phase 2 → Phase 9).
+include(":app")
 include(":core:common")
 include(":core:database")
 include(":core:datastore")

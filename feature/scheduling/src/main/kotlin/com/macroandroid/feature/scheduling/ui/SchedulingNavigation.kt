@@ -3,6 +3,7 @@ package com.macroandroid.feature.scheduling.ui
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.macroandroid.automation.model.MacroId
 import com.macroandroid.automation.model.ScheduleId
 import kotlinx.serialization.Serializable
@@ -21,10 +22,11 @@ fun NavController.navigateToScheduleEditor(scheduleId: ScheduleId? = null, macro
 fun NavGraphBuilder.schedulingGraph(
     onOpenEditor: (ScheduleId?, MacroId?) -> Unit,
     onBack: () -> Unit,
-    listHasBack: Boolean,
 ) {
-    composable<SchedulesDestination> {
-        SchedulesRoute(onOpenEditor = onOpenEditor, onBack = if (listHasBack) onBack else null)
+    composable<SchedulesDestination> { entry ->
+        // The filtered list (opened from a macro) is a detail screen and gets a back arrow; the tab does not.
+        val filtered = entry.toRoute<SchedulesDestination>().macroId != null
+        SchedulesRoute(onOpenEditor = onOpenEditor, onBack = if (filtered) onBack else null)
     }
     composable<ScheduleEditorDestination> {
         ScheduleEditorRoute(onBack = onBack)

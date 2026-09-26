@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FolderZip
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.StarBorder
@@ -73,6 +74,7 @@ object AppsTestTags {
     const val LIST = "apps.list"
     const val SEARCH = "apps.search"
     const val ROW_PREFIX = "apps.row."
+    const val APK_FILES = "apps.apkFiles"
 }
 
 /** Launches [intent] from an Activity context; returns false on the documented failure modes (FR-APP-4). */
@@ -95,6 +97,7 @@ internal fun android.content.Context.tryStartActivity(intent: Intent?): Boolean 
 fun AppsRoute(
     onOpenDetail: (packageName: String) -> Unit,
     onOpenHelp: () -> Unit,
+    onOpenApkFiles: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AppsViewModel = hiltViewModel(),
 ) {
@@ -118,6 +121,9 @@ fun AppsRoute(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MacroTopBar(title = stringResource(R.string.apps_title), scrollBehavior = scrollBehavior) {
+                IconButton(onClick = onOpenApkFiles, modifier = Modifier.testTag(AppsTestTags.APK_FILES)) {
+                    Icon(Icons.Outlined.FolderZip, contentDescription = stringResource(R.string.apps_apk_files))
+                }
                 IconButton(onClick = { viewModel.refresh() }) {
                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.apps_refresh))
                 }

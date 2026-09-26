@@ -39,4 +39,5 @@
     <string name="apps_no">No</string>
     <string name="apps_refresh">Refresh</string>
     <string name="apps_count">%1$d apps</string>
+    <string name="apps_apk_files">APK files</string>
 </resources>

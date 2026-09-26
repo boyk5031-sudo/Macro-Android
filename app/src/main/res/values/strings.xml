@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MacroAndroid</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_macros">Macros</string>
+    <string name="nav_runs">Runs</string>
+    <string name="nav_schedules">Schedules</string>
+    <string name="nav_settings">Settings</string>
+    <string name="run_confirm_title">Run “%1$s”?</string>
+    <string name="run_confirm_body">This macro uses accessibility steps and will interact with other apps on screen.</string>
+    <string name="run_confirm_run">Run</string>
+    <string name="shortcut_new_macro_short">New macro</string>
+    <string name="shortcut_new_macro_long">Create a new macro</string>
+    <string name="shortcut_runs_short">Runs</string>
+    <string name="shortcut_runs_long">Open execution history</string>
+</resources>

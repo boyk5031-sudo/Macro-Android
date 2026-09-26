@@ -17,9 +17,10 @@ fun NavController.navigateToAppDetail(packageName: String) = navigate(AppDetailD
 fun NavGraphBuilder.appsGraph(
     onOpenDetail: (String) -> Unit,
     onOpenHelp: () -> Unit,
+    onOpenApkFiles: () -> Unit,
     onBack: () -> Unit,
 ) {
-    composable<AppsDestination> { AppsRoute(onOpenDetail = onOpenDetail, onOpenHelp = onOpenHelp) }
+    composable<AppsDestination> { AppsRoute(onOpenDetail = onOpenDetail, onOpenHelp = onOpenHelp, onOpenApkFiles = onOpenApkFiles) }
     composable<AppDetailDestination> { entry ->
         // packageName is exposed to the ViewModel through SavedStateHandle["packageName"].
         entry.toRoute<AppDetailDestination>()

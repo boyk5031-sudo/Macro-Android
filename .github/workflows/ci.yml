@@ -79,6 +79,10 @@ jobs:
         shell: bash
         run: .github/scripts/gradle.sh boundaries checkModuleBoundaries
 
+      - name: Forbidden permissions (merged manifest)
+        shell: bash
+        run: .github/scripts/gradle.sh permissions :app:checkDebugForbiddenPermissions
+
       - name: Assemble release (unsigned, R8)
         shell: bash
         run: .github/scripts/gradle.sh assemble-release assembleRelease
