@@ -45,3 +45,16 @@ interface AuditContract {
 interface MacroUsageContract {
     fun observeMacroCountForPackage(packageName: String): Flow<Int>
 }
+
+/**
+ * Schedule planning (WorkManager-backed in automation:android). Features call this after saving,
+ * enabling/disabling or deleting a schedule; `:app` and the boot receiver call [reconcileAll].
+ */
+interface SchedulerContract {
+    /** (Re)plans the next occurrence of one schedule, or cancels its work when disabled/deleted. */
+    suspend fun plan(scheduleId: String)
+    suspend fun cancel(scheduleId: String)
+
+    /** Re-plans every enabled schedule and applies missed-run policies. Never starts a macro directly. */
+    suspend fun reconcileAll()
+}

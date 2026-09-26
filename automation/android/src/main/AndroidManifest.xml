@@ -5,6 +5,8 @@
     <!-- Execution progress / blocked-run prompts (runtime permission on 33+). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Long macro runs continue while the user watches another app (doc 06 §1). -->
+    <!-- Post-reboot reconciliation of schedules and execution state only; never starts a macro (Phase 0 §5). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
@@ -51,5 +53,14 @@
         <receiver
             android:name=".service.ExecutionControlReceiver"
             android:exported="false" />
+        <receiver
+            android:name=".scheduling.BootCompletedReceiver"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
