@@ -64,6 +64,7 @@ jobs:
         run: python3 .github/scripts/detekt_summary.py build/reports/detekt/detekt.xml
 
       - name: Assemble debug
+        id: assemble
         shell: bash
         run: .github/scripts/gradle.sh assemble-debug assembleDebug
 
@@ -72,18 +73,28 @@ jobs:
         run: .github/scripts/gradle.sh unit-tests testDebugUnitTest test --continue
 
       - name: Lint
+        id: lint
+        if: steps.assemble.outcome == 'success'
         shell: bash
-        run: .github/scripts/gradle.sh lint lintDebug
+        run: .github/scripts/gradle.sh lint lintDebug --continue
+
+      - name: Lint summary
+        if: always()
+        shell: bash
+        run: python3 .github/scripts/lint_summary.py
 
       - name: Module boundaries
+        if: steps.assemble.outcome == 'success'
         shell: bash
         run: .github/scripts/gradle.sh boundaries checkModuleBoundaries
 
       - name: Forbidden permissions (merged manifest)
+        if: steps.assemble.outcome == 'success'
         shell: bash
         run: .github/scripts/gradle.sh permissions :app:checkDebugForbiddenPermissions
 
       - name: Assemble release (unsigned, R8)
+        if: steps.assemble.outcome == 'success'
         shell: bash
         run: .github/scripts/gradle.sh assemble-release assembleRelease
 
