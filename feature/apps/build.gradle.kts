@@ -10,4 +10,5 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.datastore)
     implementation(libs.androidx.core.ktx)
+    testImplementation(libs.robolectric)
 }

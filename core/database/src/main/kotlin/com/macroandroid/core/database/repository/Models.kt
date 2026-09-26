@@ -45,6 +45,7 @@ enum class AuditKind {
     APP_LAUNCH_FAILED,
     SHORTCUT_PINNED,
     SHORTCUT_LAUNCHED,
+
     /** Kinds recorded by features via [com.macroandroid.core.common.contract.AuditContract] that are not modelled yet. */
     OTHER,
 }

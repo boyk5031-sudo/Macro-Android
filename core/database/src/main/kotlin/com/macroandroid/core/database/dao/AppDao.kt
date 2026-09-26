@@ -54,6 +54,12 @@ interface ImportedApkDao {
     @Query("UPDATE imported_apks SET grant_valid = :valid WHERE id = :id")
     suspend fun setGrantValid(id: String, valid: Boolean)
 
+    @Query("UPDATE imported_apks SET status = :status, error_code = :errorCode WHERE id = :id")
+    suspend fun setStatus(id: String, status: String, errorCode: String?)
+
+    @Query("SELECT COUNT(*) FROM imported_apks WHERE uri = :uri")
+    suspend fun countByUri(uri: String): Int
+
     @Query("UPDATE imported_apks SET installed_version_code = :installedVersionCode WHERE package_name = :packageName")
     suspend fun setInstalledVersion(packageName: String, installedVersionCode: Long?)
 

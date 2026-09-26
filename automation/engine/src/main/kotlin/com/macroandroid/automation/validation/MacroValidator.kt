@@ -1,8 +1,8 @@
 package com.macroandroid.automation.validation
 
 import com.macroandroid.automation.model.ActionParameters
-import com.macroandroid.automation.model.Condition
 import com.macroandroid.automation.model.ConcurrencyClass
+import com.macroandroid.automation.model.Condition
 import com.macroandroid.automation.model.Expression
 import com.macroandroid.automation.model.Macro
 import com.macroandroid.automation.model.MacroLimits

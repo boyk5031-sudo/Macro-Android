@@ -1,9 +1,13 @@
 package com.macroandroid.automation.android.di
 
+import com.macroandroid.automation.android.accessibility.AccessibilityServiceListener
 import com.macroandroid.automation.android.accessibility.AndroidAccessibilityGateway
+import com.macroandroid.automation.android.consent.AccessibilityConsent
 import com.macroandroid.automation.android.gate.AndroidPreconditionGate
+import com.macroandroid.automation.android.gate.ConsentProvider
 import com.macroandroid.automation.android.launcher.AndroidAppLauncher
 import com.macroandroid.automation.android.notification.ExecutionNotifications
+import com.macroandroid.automation.android.service.MacroRunnerContractAdapter
 import com.macroandroid.automation.engine.EnginePorts
 import com.macroandroid.automation.port.AccessibilityGateway
 import com.macroandroid.automation.port.AppLauncher
@@ -13,15 +17,11 @@ import com.macroandroid.automation.port.MacroSource
 import com.macroandroid.automation.port.NotificationPort
 import com.macroandroid.automation.port.PreconditionGate
 import com.macroandroid.automation.port.SecureValueResolver
-import com.macroandroid.core.common.error.AppResult
-import com.macroandroid.core.database.SecureValueStore
-import com.macroandroid.automation.android.accessibility.AccessibilityServiceListener
-import com.macroandroid.automation.android.consent.AccessibilityConsent
-import com.macroandroid.automation.android.gate.ConsentProvider
-import com.macroandroid.automation.android.service.MacroRunnerContractAdapter
 import com.macroandroid.core.common.contract.AuditContract
 import com.macroandroid.core.common.contract.ConsentContract
 import com.macroandroid.core.common.contract.MacroRunnerContract
+import com.macroandroid.core.common.error.AppResult
+import com.macroandroid.core.database.SecureValueStore
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

@@ -28,6 +28,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -38,7 +39,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
@@ -370,6 +370,7 @@ class MacroExecutor(
             return StepOutcome.Ok
         }
 
+        @Suppress("UnusedParameter") // `step` kept for symmetry with the other executeX helpers and future per-step policy
         private suspend fun executeParallel(step: MacroStep, a: ActionParameters.Parallel, index: Int): StepOutcome {
             log(LogLevel.INFO, "parallel ×${a.children.size}", index)
             val results: List<StepOutcome> = try {
@@ -392,6 +393,9 @@ class MacroExecutor(
 
         // ---- leaf with retries / timeout / lock -----------------------------------------------
 
+        // The attempt loop mirrors doc 07 §3 (gate -> lock -> attempt -> classify -> retry/block) as one unit so the
+        // transition table can be audited top-to-bottom; it is exercised by MacroExecutorTest. TODO(phase-10): split.
+        @Suppress("LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth", "LoopWithTooManyJumpStatements", "ReturnCount")
         private suspend fun executeLeafWithRetries(step: MacroStep, index: Int): StepOutcome {
             val retry = step.retry ?: macro.executionPolicy.defaultRetry
             var attempt = 1
@@ -429,7 +433,7 @@ class MacroExecutor(
                 val result: ActionResult = try {
                     withTimeout(timeout) { LeafActions.execute(ctx) }
                 } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-                    ActionResult.Failure(AppError(ErrorCode.STEP_TIMEOUT, "${timeout}", e))
+                    ActionResult.Failure(AppError(ErrorCode.STEP_TIMEOUT, timeout.toString(), e))
                 } catch (e: CancellationException) {
                     attemptRow = attemptRow.copy(state = StepState.CANCELLED, endedAt = clock.now())
                     withContext(NonCancellable) { ports.store.updateStepAttempt(attemptRow); flushLogs() }

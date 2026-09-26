@@ -121,7 +121,7 @@ class MacroValidatorTest {
 
     @Test
     fun `labels and jumps`() {
-        val dup = macro(log(1, "a", ).copy(label = "L"), log(2, "b").copy(label = "L"))
+        val dup = macro(log(1, "a").copy(label = "L"), log(2, "b").copy(label = "L"))
         assertThat(validator.validate(dup).has(ErrorCode.LABEL_DUPLICATE)).isTrue()
         val missing = macro(log(1, "a").copy(onFailure = FailureBehavior.JumpToLabel("nope")))
         assertThat(validator.validate(missing).has(ErrorCode.JUMP_TARGET_MISSING)).isTrue()

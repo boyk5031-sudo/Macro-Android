@@ -1,6 +1,7 @@
 package com.macroandroid.automation.testing
 
 import com.macroandroid.automation.model.ActionParameters
+import com.macroandroid.automation.model.ExecutionPolicy
 import com.macroandroid.automation.model.FailureBehavior
 import com.macroandroid.automation.model.Macro
 import com.macroandroid.automation.model.MacroId
@@ -8,7 +9,6 @@ import com.macroandroid.automation.model.MacroStep
 import com.macroandroid.automation.model.RetryPolicy
 import com.macroandroid.automation.model.StepId
 import com.macroandroid.automation.model.TextValue
-import com.macroandroid.automation.model.ExecutionPolicy
 import com.macroandroid.automation.model.VariableValue
 import kotlin.time.Duration
 import kotlin.time.Instant

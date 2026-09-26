@@ -1,8 +1,8 @@
 package com.macroandroid.automation.engine
 
 import com.macroandroid.automation.model.ActionParameters
-import com.macroandroid.automation.model.Condition
 import com.macroandroid.automation.model.CompareOp
+import com.macroandroid.automation.model.Condition
 import com.macroandroid.automation.model.Expression
 import com.macroandroid.automation.model.NodeSelector
 import com.macroandroid.automation.model.NodeState
@@ -247,6 +247,7 @@ object LeafActions {
 
     // ---- conditions -------------------------------------------------------------------------
 
+    @Suppress("CyclomaticComplexMethod") // exhaustive `when` over the Condition ADT; each branch is a one-liner
     suspend fun evaluate(ctx: ActionContext, c: Condition): AppResult<Boolean> = when (c) {
         is Condition.VarEquals -> {
             val expected = when (val r = VariableScope.toRuntime(c.value, ctx.secureValues)) {

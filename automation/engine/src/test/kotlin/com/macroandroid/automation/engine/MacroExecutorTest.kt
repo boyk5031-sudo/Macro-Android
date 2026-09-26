@@ -30,6 +30,7 @@ import com.macroandroid.automation.testing.fakePorts
 import com.macroandroid.core.common.error.AppResult
 import com.macroandroid.core.common.error.ErrorCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -37,7 +38,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.launch
 import org.junit.Test
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds

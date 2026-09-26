@@ -10,6 +10,7 @@ import com.macroandroid.core.ui.R
 object ErrorMessages {
 
     @StringRes
+    @Suppress("CyclomaticComplexMethod") // exhaustive ErrorCode -> string resource table
     fun titleRes(code: ErrorCode): Int = when (code) {
         ErrorCode.NAME_INVALID -> R.string.err_name_invalid
         ErrorCode.NAME_DUPLICATE -> R.string.err_name_duplicate

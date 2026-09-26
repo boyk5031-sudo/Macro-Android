@@ -134,7 +134,7 @@ class AppsViewModel @Inject constructor(
     }
 
     private fun comparator(sort: AppsSortOrder): Comparator<InstalledApp> {
-        val byLabel = compareBy<InstalledApp>(String.CASE_INSENSITIVE_ORDER) { it.label }
+        val byLabel = Comparator<InstalledApp> { a, b -> String.CASE_INSENSITIVE_ORDER.compare(a.label, b.label) }
         return when (sort) {
             AppsSortOrder.LABEL -> byLabel
             AppsSortOrder.RECENTLY_INSTALLED -> compareByDescending<InstalledApp> { it.firstInstalledAt }.then(byLabel)

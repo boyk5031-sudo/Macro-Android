@@ -35,4 +35,10 @@ data class ImportedApkEntity(
     @ColumnInfo(name = "imported_at") val importedAt: Long,
     @ColumnInfo(name = "grant_valid") val grantValid: Boolean = true,
     val notes: String = "",
+    /** READY | INVALID | UNAVAILABLE (FR-APK-2/5). */
+    val status: String = "READY",
+    /** [com.macroandroid.core.common.error.ErrorCode] name when status != READY. */
+    @ColumnInfo(name = "error_code") val errorCode: String? = null,
+    /** Optional local copy under `filesDir/apk-copies` when "Keep local copy" is on. */
+    @ColumnInfo(name = "local_copy_path") val localCopyPath: String? = null,
 )

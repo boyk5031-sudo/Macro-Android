@@ -53,6 +53,7 @@ class UserPreferencesRepository @Inject constructor(
         dataStore.edit { block(it) }
     }
 
+    @Suppress("CyclomaticComplexMethod") // flat key-to-field mapping; each `?:` counts as a branch
     private fun Preferences.toModel() = UserPreferences(
         onboardingCompleted = this[Keys.ONBOARDING] ?: false,
         accessibilityConsentGrantedAt = this[Keys.A11Y_CONSENT_AT],

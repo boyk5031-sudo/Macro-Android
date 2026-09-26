@@ -97,7 +97,8 @@ class KeystoreSecureValueCipher @Inject constructor() : SecureValueCipher {
         return try {
             generator.init(spec(strongBox = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P))
             generator.generateKey()
-        } catch (e: StrongBoxUnavailableException) {
+        } catch (_: StrongBoxUnavailableException) {
+            // Documented fallback: StrongBox is optional hardware; TEE-backed keys are the baseline (ADR-0006).
             generator.init(spec(strongBox = false))
             generator.generateKey()
         }

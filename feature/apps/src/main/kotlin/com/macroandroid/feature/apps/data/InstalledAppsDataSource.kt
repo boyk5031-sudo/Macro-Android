@@ -45,14 +45,14 @@ class InstalledAppsDataSource @Inject constructor(
             @Suppress("DEPRECATION")
             pm.queryIntentActivities(intent, 0)
         }
-        resolved.asSequence()
-            .map { it.activityInfo.packageName }
-            .distinct()
-            .mapNotNull { pkg -> load(pkg) }
-            .toList()
+        resolved.map { it.activityInfo.packageName }.distinct().mapNotNull { pkg -> loadBlocking(pkg) }
     }
 
-    suspend fun load(packageName: String): InstalledApp? = withContext(dispatchers.io) {
+    suspend fun load(packageName: String): InstalledApp? = withContext(dispatchers.io) { loadBlocking(packageName) }
+
+    /** Must run on [AppDispatchers.io]. */
+    @Suppress("ReturnCount")
+    private fun loadBlocking(packageName: String): InstalledApp? {
         val info = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))
@@ -61,12 +61,12 @@ class InstalledAppsDataSource @Inject constructor(
                 pm.getPackageInfo(packageName, 0)
             }
         } catch (_: PackageManager.NameNotFoundException) {
-            return@withContext null
+            return null
         }
-        val app = info.applicationInfo ?: return@withContext null
+        val app = info.applicationInfo ?: return null
         val flags = app.flags
         val isSystem = flags and ApplicationInfo.FLAG_SYSTEM != 0 && flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP == 0
-        InstalledApp(
+        return InstalledApp(
             packageName = packageName,
             label = app.loadLabel(pm).toString(),
             versionName = info.versionName,

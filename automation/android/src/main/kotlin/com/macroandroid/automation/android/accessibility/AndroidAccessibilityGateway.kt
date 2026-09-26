@@ -183,7 +183,7 @@ class AndroidAccessibilityGateway @Inject constructor(
     }
 
     private fun clickableAncestorOrSelf(node: AccessibilityNodeInfo): AccessibilityNodeInfo {
-        if (node.isClickable || node.isLongClickable || node.isEditable || node.isScrollable) return node
+        if (node.isActionable()) return node
         var current = node.parent
         var hops = 0
         while (current != null && hops < MAX_ANCESTOR_HOPS) {
@@ -225,3 +225,5 @@ class AndroidAccessibilityGateway @Inject constructor(
         const val CACHE_LIMIT = 512
     }
 }
+
+private fun AccessibilityNodeInfo.isActionable(): Boolean = isClickable || isLongClickable || isEditable || isScrollable

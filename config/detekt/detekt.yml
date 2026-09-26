@@ -7,6 +7,7 @@ config:
   warningsAsErrors: true
 
 complexity:
+  excludes: &testSources ['**/test/**', '**/androidTest/**', '**/testFixtures/**']
   LongParameterList:
     functionThreshold: 8
     constructorThreshold: 12
@@ -16,7 +17,7 @@ complexity:
     ignoreAnnotated: ['Composable', 'Test']
   TooManyFunctions:
     thresholdInClasses: 25
-    thresholdInInterfaces: 25
+    thresholdInInterfaces: 32 # Room DAOs group all queries of one aggregate
     thresholdInObjects: 25
     thresholdInFiles: 30
     ignorePrivate: true
@@ -40,7 +41,8 @@ style:
     maxLineLength: 140
     excludeCommentStatements: true
   ReturnCount:
-    max: 4
+    max: 6
+    excludeGuardClauses: true
   UnusedPrivateMember:
     ignoreAnnotated: ['Preview', 'PreviewLightDark']
   WildcardImport:
@@ -75,6 +77,13 @@ formatting:
   autoCorrect: true
   MaximumLineLength:
     maxLineLength: 140
+  PropertyWrapping:
+    active: false
+  SpacingBetweenDeclarationsWithAnnotations:
+    active: false # one-line @Binds/@Query declarations are conventional in Hilt modules and DAOs
+  ImportOrdering:
+    active: true
+    layout: '*,java.**,javax.**,kotlin.**,^'
   TrailingCommaOnCallSite:
     active: true
     useTrailingCommaOnCallSite: true

@@ -24,5 +24,7 @@ class MacroRunnerContractAdapter @Inject constructor(
     override suspend fun runMacro(macroId: String, runRequestId: String?): AppResult<String> =
         runner.run(MacroId(macroId), runRequestId = runRequestId ?: Uuid.random().toString()).map { it.id.value }
 
-    override fun cancel(executionId: String) = runner.cancel(ExecutionId(executionId))
+    override fun cancel(executionId: String) {
+        runner.cancel(ExecutionId(executionId))
+    }
 }

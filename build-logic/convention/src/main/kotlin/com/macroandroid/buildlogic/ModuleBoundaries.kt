@@ -58,7 +58,7 @@ abstract class CheckModuleBoundariesTask : DefaultTask() {
         }
     }
 
-    @Suppress("ReturnCount")
+    @Suppress("ReturnCount", "CyclomaticComplexMethod") // the dependency matrix is intentionally a single readable table
     private fun isAllowed(from: String, to: String): Boolean {
         if (to == from) return true
         if (to == ":app") return false
@@ -66,7 +66,8 @@ abstract class CheckModuleBoundariesTask : DefaultTask() {
         return when {
             from == ":app" -> true
             from == ":core:common" -> false
-            from == ":core:security" || from == ":core:datastore" || from == ":core:ui" -> to == ":core:common"
+            from == ":core:security" || from == ":core:datastore" || from == ":core:ui" || from == ":core:platform" ->
+                to == ":core:common"
             // core:database hosts the Room-backed repositories, so it maps entities <-> engine model.
             from == ":core:database" -> to == ":core:common" || to == ":core:security" || to == ":automation:engine"
             from == ":core:testing" -> to.startsWith(":core:") || to == ":automation:engine"
