@@ -63,7 +63,7 @@ class AppShortcuts @Inject constructor(
     }
 
     /** Dynamic shortcuts for the 4 most recently run enabled macros (launcher long-press). */
-    override suspend fun publishRecentMacros() = withContext(dispatchers.io) {
+    override suspend fun publishRecentMacros(): Unit = withContext(dispatchers.io) {
         val recent = macros.observeSummaries().first()
             .filter { it.enabled && it.lastRunAt != null }
             .sortedByDescending { it.lastRunAt }
