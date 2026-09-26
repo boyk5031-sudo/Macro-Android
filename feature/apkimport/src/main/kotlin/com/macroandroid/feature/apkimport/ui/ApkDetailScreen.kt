@@ -68,7 +68,9 @@ fun ApkDetailRoute(
         viewModel.events.collect { event ->
             when (event) {
                 is ApkDetailEvent.ChecksumVerified ->
-                    snackbar.showSnackbar(context.getString(if (event.matches) R.string.apk_checksum_ok else R.string.apk_checksum_mismatch))
+                    snackbar.showSnackbar(
+                        context.getString(if (event.matches) R.string.apk_checksum_ok else R.string.apk_checksum_mismatch),
+                    )
                 is ApkDetailEvent.Error -> snackbar.showSnackbar(context.getString(ErrorMessages.titleRes(event.error)))
                 ApkDetailEvent.Relinked -> snackbar.showSnackbar(context.getString(R.string.apk_relinked))
                 ApkDetailEvent.Deleted -> onBack()
@@ -130,7 +132,10 @@ fun ApkDetailRoute(
                         stringResource(R.string.apk_detail_sdk_value, apk.minSdk?.toString() ?: "—", apk.targetSdk?.toString() ?: "—"),
                     )
                     DetailRow(stringResource(R.string.apk_detail_installed_state), installedLabel(s.installedState))
-                    DetailRow(stringResource(R.string.apk_detail_split), stringResource(if (apk.isSplit) R.string.apk_yes else R.string.apk_no))
+                    DetailRow(
+                        stringResource(R.string.apk_detail_split),
+                        stringResource(if (apk.isSplit) R.string.apk_yes else R.string.apk_no),
+                    )
                     DetailRow(stringResource(R.string.apk_detail_sha256), apk.sha256.ifEmpty { "—" }, mono = true)
                     DetailRow(stringResource(R.string.apk_detail_signer), apk.signerSha256 ?: "—", mono = true)
                     DetailRow(stringResource(R.string.apk_detail_imported), formatInstant(context, apk.importedAt))
@@ -183,6 +188,8 @@ fun ApkDetailRoute(
 private fun DetailRow(label: String, value: String, mono: Boolean = false) {
     ListItem(
         overlineContent = { Text(label) },
-        headlineContent = { Text(value, fontFamily = if (mono) FontFamily.Monospace else null, style = MaterialTheme.typography.bodyMedium) },
+        headlineContent = {
+            Text(value, fontFamily = if (mono) FontFamily.Monospace else null, style = MaterialTheme.typography.bodyMedium)
+        },
     )
 }

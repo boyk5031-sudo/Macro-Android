@@ -49,6 +49,7 @@ class ApkAnalyzer @Inject constructor(
     private val resolver: ContentResolver get() = context.contentResolver
 
     /** Steps 1–3 of FR-APK-2: size check, streamed copy + SHA-256, ZIP magic. */
+    @Suppress("CyclomaticComplexMethod", "ReturnCount") // one linear pipeline with early exits per FR-APK-2 failure code
     suspend fun readFile(uri: Uri, maxBytes: Long): AppResult<ApkFileFacts> = withContext(dispatchers.io) {
         val (name, size) = queryNameAndSize(uri)
         if (size != null && size > maxBytes) return@withContext AppResult.err(ErrorCode.FILE_TOO_LARGE, "$size > $maxBytes")

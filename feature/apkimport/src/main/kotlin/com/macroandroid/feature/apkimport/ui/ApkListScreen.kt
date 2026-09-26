@@ -89,7 +89,9 @@ fun ApkListRoute(
         viewModel.events.collect { event ->
             when (event) {
                 is ApkListEvent.ImportFinished ->
-                    snackbar.showSnackbar(context.getString(R.string.apk_import_summary, event.imported, event.invalid, event.rejected.size))
+                    snackbar.showSnackbar(
+                        context.getString(R.string.apk_import_summary, event.imported, event.invalid, event.rejected.size),
+                    )
                 is ApkListEvent.HighlightExisting -> highlightId = event.id
                 is ApkListEvent.Deleted -> snackbar.showSnackbar(context.getString(R.string.apk_deleted, event.name))
             }
@@ -237,7 +239,11 @@ private fun ApkRow(apk: ImportedApk, highlighted: Boolean, installedLabel: Strin
                         StatusChip(stringResource(R.string.apk_possible_duplicate), MacroTheme.status.warning, MacroTheme.status.onWarning)
                     }
                     if (apk.packageName != null) {
-                        Text(installedLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            installedLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

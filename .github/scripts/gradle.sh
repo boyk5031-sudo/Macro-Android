@@ -19,8 +19,8 @@ if [ "$status" -ne 0 ]; then
   grep -nE 'FAILED$|^ +[A-Za-z0-9_.]+ > .* FAILED' "$log" | head -40 | while IFS= read -r line; do
     printf '::error title=%s-test::%s\n' "$name" "${line//::/ }"
   done
-  # Kotlin compilation error context: 40 lines after the first "e:".
-  grep -nE '^e: ' "$log" | head -40 | while IFS= read -r line; do
+  # Kotlin compiler diagnostics (errors and, because -Werror is on, warnings).
+  grep -nE '^(e|w): ' "$log" | head -40 | while IFS= read -r line; do
     printf '::error title=%s-kotlin::%s\n' "$name" "${line//::/ }"
   done
 fi

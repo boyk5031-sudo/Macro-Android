@@ -29,6 +29,9 @@ interface MacroRepository : MacroSource {
     fun observeProfiles(): Flow<List<String>>
     fun observeCount(): Flow<Int>
     fun observe(id: MacroId): Flow<Macro?>
+
+    /** Every macro fully decoded; only for cheap aggregate views (package usage counts). */
+    fun observeAllMacros(): Flow<List<Macro>>
     suspend fun get(id: MacroId): Macro?
     suspend fun enabledMacros(): List<Macro>
     suspend fun namesInProfile(profile: String, excluding: MacroId): Set<String>
@@ -62,6 +65,12 @@ class RoomMacroRepository @Inject constructor(
     override fun observeProfiles(): Flow<List<String>> = dao.observeProfiles()
 
     override fun observeCount(): Flow<Int> = dao.observeCount()
+
+    override fun observeAllMacros(): Flow<List<Macro>> =
+        combine(dao.observeAll(), dao.observeAllMacroTags()) { macros, refs ->
+            val tagsByMacro = refs.groupBy({ it.macroId }, { it.tag })
+            macros.mapNotNull { e -> runCatching { Mappers.toMacro(e, tagsByMacro[e.id].orEmpty().sorted()) }.getOrNull() }
+        }
 
     override fun observe(id: MacroId): Flow<Macro?> =
         combine(dao.observe(id.value), dao.observeAllMacroTags()) { entity, refs ->

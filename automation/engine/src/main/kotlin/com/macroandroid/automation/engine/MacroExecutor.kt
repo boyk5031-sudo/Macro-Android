@@ -230,6 +230,7 @@ class MacroExecutor(
             }
         }
 
+        @Suppress("ReturnCount") // each return is a terminal state of the doc 07 state machine
         private suspend fun runInternal(): ExecutionOutcome {
             // QUEUED → PREPARING: wait for a slot (bounded by queueTimeout).
             val acquired = withTimeoutOrNull(config.queueTimeout) { slots.acquire(); true } ?: false

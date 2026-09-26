@@ -112,6 +112,7 @@ object LeafActions {
         return ActionResult.Success("scrolled ${a.times}× ${a.direction}")
     }
 
+    @Suppress("ReturnCount") // each early return maps to a distinct documented failure code
     private suspend fun enterText(ctx: ActionContext, a: ActionParameters.EnterText): ActionResult {
         val (text, secret) = when (val r = ctx.variables.resolveString(a.text, ctx.secureValues)) {
             is AppResult.Err -> return ActionResult.Failure(r.error)
