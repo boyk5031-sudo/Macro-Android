@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings -->
+    <string name="set_title">Settings</string>
+    <string name="set_section_permissions">Permissions</string>
+    <string name="set_permission_center">Permission center</string>
+    <string name="set_permission_center_help">Notifications, accessibility service, battery optimisation, shortcuts</string>
+    <string name="set_section_appearance">Appearance</string>
+    <string name="set_theme">Theme</string>
+    <string name="set_theme_system">System</string>
+    <string name="set_theme_light">Light</string>
+    <string name="set_theme_dark">Dark</string>
+    <string name="set_dynamic_color">Dynamic colour</string>
+    <string name="set_dynamic_color_help">Use wallpaper colours (Android 12 and later)</string>
+    <string name="set_section_execution">Execution</string>
+    <string name="set_confirm_before_run">Confirm before running</string>
+    <string name="set_confirm_before_run_help">Ask before starting macros that use accessibility steps</string>
+    <string name="set_keep_screen_on">Keep screen on while running</string>
+    <string name="set_keep_screen_on_help">Only while this app is in the foreground</string>
+    <string name="set_verbose">Verbose logging</string>
+    <string name="set_verbose_help">Store debug-level entries in execution logs. Log text may include on-screen labels.</string>
+    <string name="set_section_retention">History</string>
+    <string name="set_retention_days">Keep history for %1$d days</string>
+    <string name="set_retention_runs">Keep at most %1$d runs</string>
+    <string name="set_section_privacy">Privacy</string>
+    <string name="set_export_secure">Include sensitive values in exports</string>
+    <string name="set_export_secure_help">Default for macro exports; you can override per export. Off keeps secrets on this device.</string>
+    <string name="set_copy_apk">Keep local copies of imported APKs</string>
+    <string name="set_copy_apk_help">Copies files into app storage so they stay available if the original moves. Uses more space.</string>
+    <string name="set_audit_log">Audit log</string>
+    <string name="set_audit_log_help">Security-relevant events: consent, service connection, exports, imports</string>
+    <string name="set_section_diagnostics">Diagnostics</string>
+    <string name="set_export_diagnostics">Export diagnostics</string>
+    <string name="set_export_diagnostics_help">Save a text file with device facts, settings and recent run summaries (no secrets, no log text)</string>
+    <string name="set_diagnostics_exported">Diagnostics saved</string>
+    <string name="set_clear_history">Clear execution history</string>
+    <string name="set_clear_history_help">Delete all execution records and logs</string>
+    <string name="set_clear_history_body">All execution records, step results and logs are deleted. Macros, schedules and the audit log are kept.</string>
+    <string name="set_clear">Clear</string>
+    <string name="set_history_cleared">History cleared</string>
+    <string name="set_reset_onboarding">Show introduction again</string>
+    <string name="set_reset_onboarding_help">Replays the welcome screens next time the app opens</string>
+    <string name="set_onboarding_reset_done">The introduction will be shown next time</string>
+    <string name="set_help">Help &amp; limitations</string>
+    <string name="set_help_help">What automation can and cannot do, troubleshooting</string>
+    <string name="set_about">About</string>
+    <string name="set_about_help">Version, privacy, licences</string>
+
+    <!-- Permission center -->
+    <string name="perm_title">Permission center</string>
+    <string name="perm_notifications">Notifications</string>
+    <string name="perm_notifications_help">Shows progress of running macros and asks for help when a run is blocked. Without it, status is only visible inside the app.</string>
+    <string name="perm_state_granted">Allowed</string>
+    <string name="perm_state_denied">Not allowed</string>
+    <string name="perm_allow">Allow</string>
+    <string name="perm_open_settings">Open notification settings</string>
+    <string name="perm_a11y">Accessibility service</string>
+    <string name="perm_a11y_help">Needed only for macro steps that tap, type or read the screen of other apps. Off by default; enable it after reading the disclosure.</string>
+    <string name="perm_a11y_no_consent">Disclosure not accepted</string>
+    <string name="perm_a11y_consent_outdated">Disclosure updated – please review</string>
+    <string name="perm_a11y_disabled">Off in system settings</string>
+    <string name="perm_a11y_connecting">Enabled, waiting for connection</string>
+    <string name="perm_a11y_ready">Ready</string>
+    <string name="perm_a11y_review">Read disclosure</string>
+    <string name="perm_open_a11y_settings">Open Accessibility settings</string>
+    <string name="perm_withdraw">Withdraw consent</string>
+    <string name="perm_withdraw_title">Withdraw accessibility consent?</string>
+    <string name="perm_withdraw_body">%1$d macro(s) with accessibility steps will be disabled. Turn the service off in Accessibility settings afterwards; the app cannot do that for you.</string>
+    <string name="perm_restricted_help">If Android shows “Restricted setting” when you try to enable the service, open App info, tap the ⋮ menu and choose “Allow restricted settings”. This only affects apps not installed from Google Play.</string>
+    <string name="perm_open_app_info">Open App info</string>
+    <string name="perm_battery">Battery optimisation</string>
+    <string name="perm_battery_help">With optimisation on, schedules can be delayed while the device is idle. Changing this is optional; the app never requests it directly.</string>
+    <string name="perm_state_unrestricted">Unrestricted</string>
+    <string name="perm_state_optimized">Optimised (default)</string>
+    <string name="perm_open_battery_list">Open battery optimisation list</string>
+    <string name="perm_shortcuts">Home-screen shortcuts</string>
+    <string name="perm_shortcuts_help">Pin apps and macros to the launcher. Depends on the launcher you use.</string>
+    <string name="perm_state_supported">Supported</string>
+    <string name="perm_state_unsupported">Not supported by this launcher</string>
+    <string name="perm_footer">This app does not use the internet, does not install apps and never runs macros you did not create or schedule.</string>
+    <string name="perm_open_help">Troubleshooting</string>
+
+    <!-- Accessibility disclosure -->
+    <string name="disc_title">Accessibility service disclosure</string>
+    <string name="disc_intro">MacroAndroid can use an Android accessibility service to perform the steps of macros you build, such as tapping a button or entering text in another app. Please read what this means before enabling it.</string>
+    <string name="disc_reads_title">What the service can read</string>
+    <string name="disc_reads_body">While one of your macros is running, the content of the window on screen – including text and labels of the app in front. It does not read anything when no macro is running.</string>
+    <string name="disc_does_title">What it does with that</string>
+    <string name="disc_does_body">Only the steps you defined, in the order you defined them, on this device. Nothing is sent anywhere: the app has no internet permission.</string>
+    <string name="disc_never_title">What it never does</string>
+    <string name="disc_never_body">It never reads or types into password fields, never acts on the lock screen, never runs macros on its own, and never decides actions by itself. Each run is started by you or by a schedule you created.</string>
+    <string name="disc_data_title">What is stored</string>
+    <string name="disc_data_body">Execution logs on this device (step results, errors, and – if you enable verbose logging – short labels of targeted elements) and an audit trail of consent and service connections. You can delete both in Settings.</string>
+    <string name="disc_control_title">You stay in control</string>
+    <string name="disc_control_body">You can withdraw consent at any time in the Permission center, and turn the service off in Android Accessibility settings. Withdrawing disables all macros that use accessibility steps.</string>
+    <string name="disc_agree">I understand and agree</string>
+    <string name="disc_continue">Continue</string>
+    <string name="disc_consented">Consent recorded. Enable “MacroAndroid” under Accessibility → Installed apps (or Downloaded apps) to finish.</string>
+    <string name="disc_open_settings">Open Accessibility settings</string>
+    <string name="disc_open_settings_enabled">Service enabled – open settings</string>
+    <string name="disc_done">Done</string>
+
+    <!-- Audit log -->
+    <string name="audit_title">Audit log</string>
+    <string name="audit_empty_title">No events yet</string>
+    <string name="audit_empty_body">Consent changes, service connections, imports and exports appear here.</string>
+
+    <!-- Help -->
+    <string name="help_title">Help &amp; limitations</string>
+    <string name="help_search">Search help</string>
+    <string name="help_automation_title">What UI automation can and cannot do</string>
+    <string name="help_automation_body">Macros can launch apps, wait, evaluate conditions, and – with the accessibility service enabled – find elements by view id, text or content description and click them, scroll, type text, or press Back/Home. They act on whatever is on screen, so the device must be unlocked with the screen on. They cannot control apps that are not visible, cannot read or type passwords, cannot act on the lock screen or system dialogs that block accessibility, and cannot run when the accessibility service is off. Apps may change their layout in updates; macros that rely on view ids are the most robust.</string>
+    <string name="help_robust_title">Writing robust macros</string>
+    <string name="help_robust_body">Prefer view ids over text. Add a short Wait after launching an app. Use Wait for element instead of fixed delays. Add an If element exists check before clicking optional buttons. Set a step timeout and a retry count for flaky screens. Test single steps from the editor before scheduling.</string>
+    <string name="help_schedules_title">Schedules are not exact</string>
+    <string name="help_schedules_body">Schedules use Android WorkManager, which batches work to save battery. Runs may start minutes late, especially while the device is idle. If an occurrence is missed by more than the threshold you set, the missed-run policy decides whether it runs late, is skipped, or runs once for all missed occurrences. Exact alarms are intentionally not used. Runs that need accessibility steps stay blocked until the device is unlocked.</string>
+    <string name="help_battery_title">Battery managers and background limits</string>
+    <string name="help_battery_body">Some manufacturers (for example Xiaomi, Huawei, OnePlus, Samsung “sleeping apps”) stop background work aggressively. If schedules stop firing, exclude the app from battery optimisation and from any vendor “auto-start” or “sleeping apps” list. Android also limits how long a scheduled run can continue in the background; long macros should be started manually.</string>
+    <string name="help_visibility_title">Why some apps are not listed</string>
+    <string name="help_visibility_body">Android 11 and later only shows apps with a launcher icon to other apps (package visibility). System components without an icon and apps in work profiles are hidden. Managed devices may restrict the list further.</string>
+    <string name="help_install_title">Why installation is not offered</string>
+    <string name="help_install_body">This app deliberately does not install, update or uninstall packages. Installing apps from files carries security risk and requires the “Install unknown apps” permission; it is out of scope and will not be added without a separate security review. You can inspect imported APKs (metadata, permissions, checksums) and open them with the system installer yourself.</string>
+    <string name="help_files_title">File access</string>
+    <string name="help_files_body">APK files are opened through the Android document picker only; the app does not request access to all files. If a file is moved, renamed or the permission is revoked, the entry shows “Unavailable” and you can re-select it.</string>
+    <string name="help_troubleshooting_title">Troubleshooting</string>
+    <string name="help_troubleshooting_body">Service turned off by Android: this happens after some updates or if the app was force-stopped; re-enable it in Accessibility settings. Run is blocked: unlock the device, turn the screen on, or grant the missing permission from the notification. “Restricted setting” when enabling the service: open App info → ⋮ → Allow restricted settings (only for apps not installed from Google Play). Macro fails on “element not found”: the target app changed its layout; open the macro and re-pick the element. Notifications missing: allow them in the Permission center.</string>
+    <string name="help_privacy_title">Privacy</string>
+    <string name="help_privacy_body">No internet permission, no analytics, no accounts. Everything stays on this device. Sensitive text values are encrypted with a key in the Android Keystore and are excluded from logs and exports by default. Exports and diagnostics are files you choose where to save.</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_app_name">MacroAndroid</string>
+    <string name="about_version">Version %1$s (%2$d)</string>
+    <string name="about_what_title">What this app is</string>
+    <string name="about_what_body">A local tool to organise installed apps and APK files, and to build small, explicit macros that automate repetitive taps and text entry with your consent.</string>
+    <string name="about_limits_title">Limitations</string>
+    <string name="about_limits_body">No app installation. No background control of apps that are not on screen. Schedules are inexact. Accessibility steps require the device to be unlocked and the service enabled.</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_body">The app has no internet permission and sends no data. Details are in Help → Privacy.</string>
+    <string name="about_licences_title">Open-source licences</string>
+    <string name="about_licences_body">This app uses Android Jetpack, Kotlin and other Apache-2.0 licensed libraries. The full notice list ships with the app package.</string>
+    <string name="about_open_help">Open help</string>
+
+    <!-- Onboarding -->
+    <string name="onb_1_title">Your apps and APKs, organised</string>
+    <string name="onb_1_body">Search installed apps, pin favourites, and import APK files to see their metadata, permissions and checksums – without installing anything.</string>
+    <string name="onb_2_title">Macros you define, step by step</string>
+    <string name="onb_2_body">Build macros from typed steps – launch, wait, tap, type, conditions – run them by hand or on a schedule, and follow every run in the history.</string>
+    <string name="onb_3_title">You decide what is allowed</string>
+    <string name="onb_3_body">Nothing runs without you. Steps that touch other apps need the accessibility service, which stays off until you read the disclosure and enable it. There is no internet access.</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_next">Next</string>
+    <string name="onb_start">Get started</string>
+</resources>
