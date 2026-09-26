@@ -63,26 +63,26 @@ class WorkManagerScheduler @Inject constructor(
     override suspend fun reconcileAll() {
         val now = clock.now()
         for (stored in schedules.all()) {
-            if (!stored.spec.enabled) {
-                workManager.cancelUniqueWork(stored.workName)
-                continue
-            }
-            val planned = stored.nextRunAt
-            if (planned != null && planned <= now) {
-                // The occurrence passed while the process/device was down; apply the missed-run policy here so the
-                // decision is auditable in the schedule row, then continue on the normal grid.
-                val ranSince = stored.lastFiredAt?.let { it >= planned } == true
-                val late = NextRunCalculator.isLate(stored.spec, planned, now)
-                val decision = if (late) NextRunCalculator.decideMissed(stored.spec, ranSince) else MissedDecision.RUN_NOW
-                if (decision == MissedDecision.RUN_NOW) {
-                    enqueue(stored, now, now, plannedOverride = planned, late = late)
-                    continue
-                }
-                schedules.recordFired(stored.spec.id, now, "SKIPPED_MISSED")
-                enqueue(stored, NextRunCalculator.nextAfterPlanned(stored.spec, planned, now), now)
-            } else {
-                enqueue(stored, planned ?: NextRunCalculator.next(stored.spec, now), now)
-            }
+            if (stored.spec.enabled) reconcileOne(stored, now) else workManager.cancelUniqueWork(stored.workName)
+        }
+    }
+
+    private suspend fun reconcileOne(stored: StoredSchedule, now: Instant) {
+        val planned = stored.nextRunAt
+        if (planned == null || planned > now) {
+            enqueue(stored, planned ?: NextRunCalculator.next(stored.spec, now), now)
+            return
+        }
+        // The occurrence passed while the process/device was down; apply the missed-run policy here so the decision
+        // is auditable in the schedule row, then continue on the normal grid.
+        val ranSince = stored.lastFiredAt?.let { it >= planned } == true
+        val late = NextRunCalculator.isLate(stored.spec, planned, now)
+        val decision = if (late) NextRunCalculator.decideMissed(stored.spec, ranSince) else MissedDecision.RUN_NOW
+        if (decision == MissedDecision.RUN_NOW) {
+            enqueue(stored, now, now, plannedOverride = planned, late = late)
+        } else {
+            schedules.recordFired(stored.spec.id, now, "SKIPPED_MISSED")
+            enqueue(stored, NextRunCalculator.nextAfterPlanned(stored.spec, planned, now), now)
         }
     }
 

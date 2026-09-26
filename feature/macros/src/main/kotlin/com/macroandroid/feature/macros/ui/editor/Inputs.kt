@@ -66,7 +66,7 @@ internal fun <T : Enum<T>> EnumDropdown(
 }
 
 @Composable
-internal fun LabeledSwitch(label: String, checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+internal fun LabeledSwitch(label: String, checked: Boolean, modifier: Modifier = Modifier, onChange: (Boolean) -> Unit) {
     Row(modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange)

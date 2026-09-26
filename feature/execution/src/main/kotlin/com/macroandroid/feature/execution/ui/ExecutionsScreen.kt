@@ -24,7 +24,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -95,7 +95,7 @@ fun ExecutionsRoute(
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            TabRow(selectedTabIndex = tab) {
+            PrimaryTabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == TAB_ACTIVE, onClick = { tab = TAB_ACTIVE }, text = {
                     Text(stringResource(R.string.exe_tab_active, state.active.size))
                 })

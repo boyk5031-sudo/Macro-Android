@@ -313,7 +313,7 @@ private fun HeaderFields(macro: Macro, state: MacroEditorUiState, vm: MacroEdito
             }
         }
         TagsEditor(macro.tags, vm::addTag, vm::removeTag)
-        LabeledSwitch(stringResource(R.string.macro_enabled), macro.enabled, vm::setEnabled)
+        LabeledSwitch(stringResource(R.string.macro_enabled), macro.enabled, onChange = vm::setEnabled)
         LabeledSwitch(stringResource(R.string.macro_confirm_before_run), macro.executionPolicy.requiresConfirmationBeforeRun) {
             vm.setPolicy(macro.executionPolicy.copy(requiresConfirmationBeforeRun = it))
         }

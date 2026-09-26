@@ -292,8 +292,9 @@ class MacroEditorViewModel @Inject constructor(
 
     private fun secureIdsOf(steps: List<MacroStep>): List<String> = buildList {
         steps.forEach { s ->
+            val text = (s.action as? ActionParameters.EnterText)?.text
+            if (text is TextValue.Secure) add(text.ref.id)
             val a = s.action
-            if (a is ActionParameters.EnterText && a.text is TextValue.Secure) add(a.text.ref.id)
             MacroEditing.groupsOf(a).forEach { addAll(secureIdsOf(it)) }
         }
     }

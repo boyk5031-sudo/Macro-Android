@@ -193,27 +193,37 @@ class MacroTransfer @Inject constructor(
         variables = m.variables.mapValues { (_, v) -> if (v is VariableValue.Secure) VariableValue.Secure(f(v.ref)) else v },
         steps = mapSteps(m.steps) { s ->
             val a = s.action
-            if (a is ActionParameters.EnterText && a.text is TextValue.Secure) {
-                s.copy(action = a.copy(text = TextValue.Secure(f(a.text.ref))))
+            val text = (a as? ActionParameters.EnterText)?.text
+            if (a is ActionParameters.EnterText && text is TextValue.Secure) {
+                s.copy(action = a.copy(text = TextValue.Secure(f(text.ref))))
             } else {
                 s
             }
         },
     )
 
-    private suspend fun inlineSecrets(m: Macro): Macro = m.copy(
-        steps = mapSteps(m.steps) { s ->
-            when (val a = s.action) {
-                is ActionParameters.EnterText -> if (a.text is TextValue.Secure) {
-                    val plain = secureValues.get(a.text.ref.id).getOrNull()
-                    if (plain != null) s.copy(action = a.copy(text = TextValue.Literal(plain), sensitive = true)) else s
+    private suspend fun inlineSecrets(m: Macro): Macro {
+        // Collect ids with a pure traversal, load them (suspending), then rewrite with a pure traversal.
+        val ids = mutableSetOf<String>()
+        mapSteps(m.steps) { s ->
+            val text = (s.action as? ActionParameters.EnterText)?.text
+            if (text is TextValue.Secure) ids += text.ref.id
+            s
+        }
+        val plain = ids.associateWith { id -> secureValues.get(id).getOrNull() }
+        return m.copy(
+            steps = mapSteps(m.steps) { s ->
+                val a = s.action
+                val text = (a as? ActionParameters.EnterText)?.text
+                val value = if (text is TextValue.Secure) plain[text.ref.id] else null
+                if (a is ActionParameters.EnterText && value != null) {
+                    s.copy(action = a.copy(text = TextValue.Literal(value), sensitive = true))
                 } else {
                     s
                 }
-                else -> s
-            }
-        },
-    )
+            },
+        )
+    }
 
     private fun textValues(a: ActionParameters): List<TextValue> = when (a) {
         is ActionParameters.EnterText -> listOf(a.text)
