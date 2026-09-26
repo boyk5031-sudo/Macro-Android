@@ -7,7 +7,9 @@ import com.macroandroid.core.database.repository.MacroRepository
 import com.macroandroid.core.database.repository.RoomExecutionRepository
 import com.macroandroid.core.database.repository.RoomMacroRepository
 import com.macroandroid.core.database.repository.RoomScheduleRepository
+import com.macroandroid.core.database.repository.RoomTriggerRepository
 import com.macroandroid.core.database.repository.ScheduleRepository
+import com.macroandroid.core.database.repository.TriggerRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,4 +23,5 @@ abstract class RepositoryModule {
     @Binds abstract fun executionRepository(impl: RoomExecutionRepository): ExecutionRepository
     @Binds abstract fun executionStore(impl: RoomExecutionRepository): ExecutionStore
     @Binds abstract fun scheduleRepository(impl: RoomScheduleRepository): ScheduleRepository
+    @Binds abstract fun triggerRepository(impl: RoomTriggerRepository): TriggerRepository
 }

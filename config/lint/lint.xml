@@ -6,7 +6,6 @@
     <issue id="ExportedService" severity="fatal" />
     <issue id="ExportedReceiver" severity="fatal" />
     <issue id="ExportedContentProvider" severity="fatal" />
-    <issue id="ExportedActivity" severity="fatal" />
     <issue id="TrustAllX509TrustManager" severity="fatal" />
     <issue id="AllowBackup" severity="fatal" />
     <issue id="HardcodedText" severity="error" />
@@ -20,5 +19,4 @@
     <issue id="VectorPath" severity="ignore" />
     <issue id="LintBaseline" severity="ignore" />
     <issue id="LintBaselineFixed" severity="ignore" />
-    <issue id="ComposePreviewPublic" severity="ignore" />
 </lint>

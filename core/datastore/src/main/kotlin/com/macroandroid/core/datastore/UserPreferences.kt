@@ -20,8 +20,17 @@ data class UserPreferences(
     val appsShowSystem: Boolean = false,
     val lastReconcileAt: Long? = null,
     val notificationsRationaleShown: Boolean = false,
+    /** Trigger Areas: draw the outline of an armed trigger during gameplay (off = fully transparent zone). */
+    val showTriggerIndicator: Boolean = true,
 ) {
     val accessibilityConsentGranted: Boolean get() = accessibilityConsentGrantedAt != null
+
+    /**
+     * Consent given for the disclosure text currently shipped. Capabilities added by a later disclosure version
+     * (e.g. Trigger Areas, version 2) require this; pre-existing macro steps keep working on older consent.
+     */
+    val accessibilityConsentCurrent: Boolean
+        get() = accessibilityConsentGranted && accessibilityDisclosureVersion >= CURRENT_A11Y_DISCLOSURE_VERSION
 }
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
@@ -29,4 +38,4 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
 enum class AppsSort { NAME, RECENT_UPDATE, INSTALL_DATE, FAVORITES_FIRST }
 
 /** The disclosure text version the user must have accepted; bump when the disclosure changes. */
-const val CURRENT_A11Y_DISCLOSURE_VERSION = 1
+const val CURRENT_A11Y_DISCLOSURE_VERSION = 2

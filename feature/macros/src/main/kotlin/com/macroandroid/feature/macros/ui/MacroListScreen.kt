@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -73,6 +74,7 @@ import com.macroandroid.feature.macros.presentation.MacroRow
 object MacroTestTags {
     const val LIST = "macros.list"
     const val NEW = "macros.new"
+    const val TRIGGERS = "macros.triggers"
     const val SEARCH = "macros.search"
     const val ROW_PREFIX = "macros.row."
     const val EDITOR_SAVE = "macros.editor.save"
@@ -88,6 +90,7 @@ fun MacroListRoute(
     onOpenPreview: (MacroId) -> Unit,
     onOpenExecution: (String) -> Unit,
     onOpenSchedules: (MacroId) -> Unit,
+    onOpenTriggers: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MacroListViewModel = hiltViewModel(),
 ) {
@@ -135,6 +138,9 @@ fun MacroListRoute(
         modifier = modifier,
         topBar = {
             MacroTopBar(title = stringResource(R.string.macros_title)) {
+                IconButton(onClick = onOpenTriggers, modifier = Modifier.testTag(MacroTestTags.TRIGGERS)) {
+                    Icon(Icons.Outlined.TouchApp, contentDescription = stringResource(R.string.macro_open_triggers))
+                }
                 IconButton(onClick = { importLauncher.launch(arrayOf(JSON_MIME, "*/*")) }) {
                     Icon(Icons.Outlined.FileDownload, contentDescription = stringResource(R.string.macro_import))
                 }

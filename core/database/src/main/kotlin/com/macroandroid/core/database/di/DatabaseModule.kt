@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.macroandroid.core.database.MacroDatabase
+import com.macroandroid.core.database.Migrations
 import com.macroandroid.core.database.dao.AppDao
 import com.macroandroid.core.database.dao.ExecutionDao
 import com.macroandroid.core.database.dao.ImportedApkDao
 import com.macroandroid.core.database.dao.MacroDao
 import com.macroandroid.core.database.dao.ScheduleDao
+import com.macroandroid.core.database.dao.TriggerDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,6 +27,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): MacroDatabase =
         Room.databaseBuilder(context, MacroDatabase::class.java, MacroDatabase.NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+            .addMigrations(*Migrations.ALL)
             // No destructive fallback: a missing migration must fail loudly in CI's migration test, not wipe user data.
             .build()
 
@@ -37,4 +40,6 @@ object DatabaseModule {
     @Provides fun scheduleDao(db: MacroDatabase): ScheduleDao = db.scheduleDao()
 
     @Provides fun executionDao(db: MacroDatabase): ExecutionDao = db.executionDao()
+
+    @Provides fun triggerDao(db: MacroDatabase): TriggerDao = db.triggerDao()
 }

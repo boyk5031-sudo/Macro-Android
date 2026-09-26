@@ -42,6 +42,10 @@ class AccessibilityConsent @Inject constructor(
     override suspend fun isAccessibilityConsentGranted(): Boolean = prefs.current().accessibilityConsentGranted
 
     override val consentGranted: Flow<Boolean> = prefs.preferences.map { it.accessibilityConsentGranted }.distinctUntilChanged()
+
+    /** Consent for the current disclosure version (Trigger Areas were added in version 2). */
+    override val consentCurrent: Flow<Boolean> = prefs.preferences.map { it.accessibilityConsentCurrent }.distinctUntilChanged()
+    suspend fun isConsentCurrent(): Boolean = prefs.current().accessibilityConsentCurrent
     override val serviceEnabledInSettings: Flow<Boolean> = enabledInSettings
     override val serviceConnected: Flow<Boolean> = registry.service.map { it != null }.distinctUntilChanged()
 

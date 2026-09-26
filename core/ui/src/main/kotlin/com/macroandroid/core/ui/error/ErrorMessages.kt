@@ -61,8 +61,22 @@ object ErrorMessages {
         ErrorCode.SECURE_VALUE_UNAVAILABLE, ErrorCode.KEYSTORE_UNAVAILABLE -> R.string.err_secure_unavailable
         ErrorCode.KEY_INVALIDATED -> R.string.err_key_invalidated
         ErrorCode.CHECKSUM_MISMATCH -> R.string.err_checksum
-        ErrorCode.MACRO_NOT_FOUND, ErrorCode.SCHEDULE_NOT_FOUND, ErrorCode.EXECUTION_NOT_FOUND, ErrorCode.APK_NOT_FOUND ->
-            R.string.err_not_found
+        ErrorCode.MACRO_NOT_FOUND, ErrorCode.SCHEDULE_NOT_FOUND, ErrorCode.EXECUTION_NOT_FOUND, ErrorCode.APK_NOT_FOUND,
+        ErrorCode.TRIGGER_NOT_FOUND,
+        -> R.string.err_not_found
+        ErrorCode.TRIGGER_NO_TARGETS -> R.string.err_trigger_no_targets
+        ErrorCode.TRIGGER_AREA_INVALID -> R.string.err_trigger_area_invalid
+        ErrorCode.TRIGGER_COORDINATE_INVALID -> R.string.err_trigger_coordinate_invalid
+        ErrorCode.TRIGGER_TIMING_RANGE -> R.string.err_trigger_timing_range
+        ErrorCode.GESTURE_DISPATCH_UNAVAILABLE -> R.string.err_gesture_unavailable
+        ErrorCode.DISPLAY_UNAVAILABLE -> R.string.err_display_unavailable
+        ErrorCode.DISPLAY_ORIENTATION_MISMATCH -> R.string.err_display_orientation
+        ErrorCode.TRIGGER_OVERLAY_FAILED -> R.string.err_trigger_overlay
+        ErrorCode.GESTURE_DISPATCH_FAILED -> R.string.err_gesture_failed
+        ErrorCode.GESTURE_CANCELLED -> R.string.err_gesture_cancelled
+        ErrorCode.TRIGGER_DISABLED -> R.string.err_trigger_disabled
+        ErrorCode.TRIGGER_BUSY -> R.string.err_trigger_busy
+        ErrorCode.TRIGGER_COOLDOWN -> R.string.err_trigger_cooldown
         ErrorCode.CANCELLED_BY_USER -> R.string.err_cancelled_user
         ErrorCode.CANCELLED_PROCESS_DEATH, ErrorCode.CANCELLED_REBOOT, ErrorCode.CANCELLED_SUPERSEDED -> R.string.err_interrupted
         else -> when (code.category) {

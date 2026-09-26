@@ -62,7 +62,7 @@ class ExecutionNotifications @Inject constructor(
             ?: context.getString(R.string.automation_android_fgs_title)
         val text = primary?.let {
             context.getString(R.string.automation_android_notification_step, it.completedSteps + 1, it.totalStaticSteps.coerceAtLeast(1))
-        } ?: context.getString(R.string.automation_android_fgs_text, activeCount)
+        } ?: context.resources.getQuantityString(R.plurals.automation_android_fgs_text, activeCount, activeCount)
         val builder = NotificationCompat.Builder(context, CHANNEL_PROGRESS)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle(title)

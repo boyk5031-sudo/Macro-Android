@@ -14,12 +14,14 @@ app
 ├── feature:execution     (monitor, history, FGS, notifications, run triggers)
 ├── feature:scheduling    (schedules UI, workers, boot reconcile)
 ├── feature:settings      (settings, permission center, help, onboarding, consent)
+├── feature:trigger       (Trigger Areas: list, editor, access checklist)                ← Phase 12
 ├── automation:engine     (pure Kotlin: model, validator, executor, actions API)
 ├── automation:android    (Android action implementations + a11y service + gateway)   ← added (see §2.1)
 ├── core:common           (Result/Either, dispatchers, clock, error codes, redaction, logging API)
 ├── core:database         (Room: entities, DAOs, migrations, converters, secure value store)
 ├── core:datastore        (Preferences DataStore + typed accessors)
 ├── core:security         (Keystore cipher, hashing)                                    ← added
+├── core:platform         (Android-only helpers: logger, display geometry, install source)
 ├── core:ui               (theme, design components, previews, navigation types, window-size helpers)
 └── core:testing          (test fakes, rules, fixtures — test-only consumers)             ← added
 ```

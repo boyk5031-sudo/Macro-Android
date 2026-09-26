@@ -20,7 +20,8 @@ class DisclosureViewModel @Inject constructor(
     private val consent: ConsentContract,
     private val capabilities: CapabilityStatus,
 ) : ViewModel() {
-    val uiState: StateFlow<DisclosureUiState> = combine(consent.consentGranted, consent.serviceEnabledInSettings) { c, e ->
+    // `consentCurrent`: after a disclosure bump (e.g. Trigger Areas) the user must read and agree again.
+    val uiState: StateFlow<DisclosureUiState> = combine(consent.consentCurrent, consent.serviceEnabledInSettings) { c, e ->
         DisclosureUiState(c, e)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DisclosureUiState())
 

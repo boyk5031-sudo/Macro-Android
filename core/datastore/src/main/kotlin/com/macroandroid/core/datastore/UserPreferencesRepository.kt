@@ -45,6 +45,7 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setAppsShowSystem(show: Boolean) = edit { it[Keys.APPS_SHOW_SYSTEM] = show }
     suspend fun setLastReconcileAt(at: Long) = edit { it[Keys.LAST_RECONCILE] = at }
     suspend fun setNotificationsRationaleShown(shown: Boolean) = edit { it[Keys.NOTIF_RATIONALE] = shown }
+    suspend fun setShowTriggerIndicator(show: Boolean) = edit { it[Keys.TRIGGER_INDICATOR] = show }
 
     /** Wipes everything (Settings → Delete all data). */
     suspend fun clear() = edit { it.clear() }
@@ -72,6 +73,7 @@ class UserPreferencesRepository @Inject constructor(
         appsShowSystem = this[Keys.APPS_SHOW_SYSTEM] ?: false,
         lastReconcileAt = this[Keys.LAST_RECONCILE],
         notificationsRationaleShown = this[Keys.NOTIF_RATIONALE] ?: false,
+        showTriggerIndicator = this[Keys.TRIGGER_INDICATOR] ?: true,
     )
 
     private object Keys {
@@ -92,5 +94,6 @@ class UserPreferencesRepository @Inject constructor(
         val APPS_SHOW_SYSTEM = booleanPreferencesKey("apps_show_system")
         val LAST_RECONCILE = longPreferencesKey("last_reconcile_at")
         val NOTIF_RATIONALE = booleanPreferencesKey("notifications_rationale_shown")
+        val TRIGGER_INDICATOR = booleanPreferencesKey("trigger_indicator_visible")
     }
 }

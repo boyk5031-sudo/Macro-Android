@@ -54,6 +54,10 @@ enum class ErrorCode(
     FILE_TOO_LARGE(ErrorCategory.VALIDATION),
     LIMIT_EXCEEDED(ErrorCategory.VALIDATION),
     NOT_AN_APK(ErrorCategory.VALIDATION),
+    TRIGGER_NO_TARGETS(ErrorCategory.VALIDATION),
+    TRIGGER_AREA_INVALID(ErrorCategory.VALIDATION),
+    TRIGGER_COORDINATE_INVALID(ErrorCategory.VALIDATION),
+    TRIGGER_TIMING_RANGE(ErrorCategory.VALIDATION),
 
     // ---- PERMISSION -------------------------------------------------------------------------
     NOTIFICATIONS_DENIED(ErrorCategory.PERMISSION),
@@ -62,6 +66,7 @@ enum class ErrorCode(
     URI_PERMISSION_REVOKED(ErrorCategory.PERMISSION),
     SHORTCUT_PIN_UNSUPPORTED(ErrorCategory.PERMISSION),
     FGS_START_NOT_ALLOWED(ErrorCategory.PERMISSION),
+    GESTURE_DISPATCH_UNAVAILABLE(ErrorCategory.PERMISSION),
 
     // ---- PRECONDITION -----------------------------------------------------------------------
     PRECONDITION_SCREEN_OFF(ErrorCategory.PRECONDITION),
@@ -71,6 +76,9 @@ enum class ErrorCode(
     UI_LOCK_TIMEOUT(ErrorCategory.PRECONDITION),
     BLOCKED_TIMEOUT(ErrorCategory.PRECONDITION),
     TARGET_WINDOW_NOT_ACTIVE(ErrorCategory.PRECONDITION),
+    DISPLAY_UNAVAILABLE(ErrorCategory.PRECONDITION),
+    DISPLAY_ORIENTATION_MISMATCH(ErrorCategory.PRECONDITION),
+    TRIGGER_OVERLAY_FAILED(ErrorCategory.PRECONDITION),
 
     // ---- TARGET_UI --------------------------------------------------------------------------
     NODE_NOT_FOUND(ErrorCategory.TARGET_UI),
@@ -88,6 +96,8 @@ enum class ErrorCode(
     APP_LAUNCH_FAILED(ErrorCategory.TARGET_UI),
     APP_NOT_INSTALLED(ErrorCategory.TARGET_UI, retryableOverride = false),
     APP_WINDOW_TIMEOUT(ErrorCategory.TARGET_UI),
+    GESTURE_DISPATCH_FAILED(ErrorCategory.TARGET_UI),
+    GESTURE_CANCELLED(ErrorCategory.TARGET_UI, retryableOverride = false),
 
     // ---- TRANSIENT --------------------------------------------------------------------------
     STEP_TIMEOUT(ErrorCategory.TRANSIENT),
@@ -106,6 +116,9 @@ enum class ErrorCode(
     MISSED(ErrorCategory.POLICY),
     DUPLICATE_EXACT(ErrorCategory.POLICY),
     DUPLICATE_SEMANTIC(ErrorCategory.POLICY),
+    TRIGGER_DISABLED(ErrorCategory.POLICY),
+    TRIGGER_BUSY(ErrorCategory.POLICY),
+    TRIGGER_COOLDOWN(ErrorCategory.POLICY),
 
     // ---- DATA -------------------------------------------------------------------------------
     DB_ERROR(ErrorCategory.DATA),
@@ -119,6 +132,7 @@ enum class ErrorCode(
     SCHEDULE_NOT_FOUND(ErrorCategory.DATA),
     EXECUTION_NOT_FOUND(ErrorCategory.DATA),
     APK_NOT_FOUND(ErrorCategory.DATA),
+    TRIGGER_NOT_FOUND(ErrorCategory.DATA),
 
     // ---- INTERNAL ---------------------------------------------------------------------------
     UNEXPECTED(ErrorCategory.INTERNAL),

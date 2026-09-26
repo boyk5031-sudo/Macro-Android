@@ -7,6 +7,7 @@ import com.macroandroid.core.database.dao.ExecutionDao
 import com.macroandroid.core.database.dao.ImportedApkDao
 import com.macroandroid.core.database.dao.MacroDao
 import com.macroandroid.core.database.dao.ScheduleDao
+import com.macroandroid.core.database.dao.TriggerDao
 import com.macroandroid.core.database.entity.AppFavoriteEntity
 import com.macroandroid.core.database.entity.AuditEntryEntity
 import com.macroandroid.core.database.entity.ExecutionEntity
@@ -19,6 +20,7 @@ import com.macroandroid.core.database.entity.MacroTagCrossRef
 import com.macroandroid.core.database.entity.ScheduleEntity
 import com.macroandroid.core.database.entity.SecureValueEntity
 import com.macroandroid.core.database.entity.TagEntity
+import com.macroandroid.core.database.entity.TriggerConfigEntity
 
 @Database(
     version = MacroDatabase.VERSION,
@@ -36,6 +38,7 @@ import com.macroandroid.core.database.entity.TagEntity
         ExecutionStepEntity::class,
         LogEntryEntity::class,
         AuditEntryEntity::class,
+        TriggerConfigEntity::class,
     ],
 )
 abstract class MacroDatabase : RoomDatabase() {
@@ -44,9 +47,10 @@ abstract class MacroDatabase : RoomDatabase() {
     abstract fun importedApkDao(): ImportedApkDao
     abstract fun scheduleDao(): ScheduleDao
     abstract fun executionDao(): ExecutionDao
+    abstract fun triggerDao(): TriggerDao
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
         const val NAME = "macro.db"
     }
 }

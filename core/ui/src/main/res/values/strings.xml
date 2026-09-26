@@ -68,4 +68,17 @@
     <string name="err_policy_generic">Blocked by a safety limit.</string>
     <string name="err_data_generic">A data error occurred.</string>
     <string name="err_internal_generic">Something went wrong.</string>
+    <string name="err_trigger_no_targets">Add at least one enabled target point.</string>
+    <string name="err_trigger_area_invalid">The trigger area must lie inside the screen and be at least 2% of it in each direction.</string>
+    <string name="err_trigger_coordinate_invalid">A target point lies outside the screen.</string>
+    <string name="err_trigger_timing_range">A delay, hold time, cooldown or repeat count is out of range.</string>
+    <string name="err_gesture_unavailable">Touch injection is unavailable: the accessibility service must be enabled with gesture support.</string>
+    <string name="err_display_unavailable">The display could not be measured.</string>
+    <string name="err_display_orientation">Rotate the device to the orientation this trigger was created in.</string>
+    <string name="err_trigger_overlay">The trigger overlay could not be shown.</string>
+    <string name="err_gesture_failed">Android rejected the injected touch.</string>
+    <string name="err_gesture_cancelled">The injected touch was cancelled – lift your finger before triggering again.</string>
+    <string name="err_trigger_disabled">This trigger is disabled.</string>
+    <string name="err_trigger_busy">The previous activation is still executing.</string>
+    <string name="err_trigger_cooldown">Ignored: still within the cooldown window.</string>
 </resources>

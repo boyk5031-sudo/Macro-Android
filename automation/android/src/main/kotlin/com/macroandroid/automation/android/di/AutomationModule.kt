@@ -9,6 +9,8 @@ import com.macroandroid.automation.android.launcher.AndroidAppLauncher
 import com.macroandroid.automation.android.notification.ExecutionNotifications
 import com.macroandroid.automation.android.scheduling.WorkManagerScheduler
 import com.macroandroid.automation.android.service.MacroRunnerContractAdapter
+import com.macroandroid.automation.android.trigger.AccessibilityInputInjectionAdapter
+import com.macroandroid.automation.android.trigger.TriggerRuntime
 import com.macroandroid.automation.engine.EnginePorts
 import com.macroandroid.automation.port.AccessibilityGateway
 import com.macroandroid.automation.port.AppLauncher
@@ -18,10 +20,12 @@ import com.macroandroid.automation.port.MacroSource
 import com.macroandroid.automation.port.NotificationPort
 import com.macroandroid.automation.port.PreconditionGate
 import com.macroandroid.automation.port.SecureValueResolver
+import com.macroandroid.automation.trigger.InputInjectionAdapter
 import com.macroandroid.core.common.contract.AuditContract
 import com.macroandroid.core.common.contract.ConsentContract
 import com.macroandroid.core.common.contract.MacroRunnerContract
 import com.macroandroid.core.common.contract.SchedulerContract
+import com.macroandroid.core.common.contract.TriggerRuntimeContract
 import com.macroandroid.core.common.error.AppResult
 import com.macroandroid.core.database.SecureValueStore
 import dagger.Binds
@@ -44,6 +48,8 @@ abstract class AutomationBindingsModule {
     @Binds abstract fun auditContract(impl: AccessibilityConsent): AuditContract
     @Binds abstract fun macroRunnerContract(impl: MacroRunnerContractAdapter): MacroRunnerContract
     @Binds abstract fun schedulerContract(impl: WorkManagerScheduler): SchedulerContract
+    @Binds abstract fun triggerRuntimeContract(impl: TriggerRuntime): TriggerRuntimeContract
+    @Binds abstract fun inputInjectionAdapter(impl: AccessibilityInputInjectionAdapter): InputInjectionAdapter
 }
 
 @Module

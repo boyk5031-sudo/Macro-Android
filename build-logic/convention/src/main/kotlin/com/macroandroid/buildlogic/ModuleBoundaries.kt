@@ -74,7 +74,7 @@ abstract class CheckModuleBoundariesTask : DefaultTask() {
             from == ":automation:engine" -> to == ":core:common"
             from == ":automation:android" ->
                 to == ":automation:engine" || to == ":core:common" || to == ":core:database" ||
-                    to == ":core:security" || to == ":core:datastore"
+                    to == ":core:security" || to == ":core:datastore" || to == ":core:platform"
             from == ":feature:execution" ->
                 to.startsWith(":core:") || to == ":automation:engine" || to == ":automation:android"
             from.startsWith(":feature:") -> to.startsWith(":core:") || to == ":automation:engine"

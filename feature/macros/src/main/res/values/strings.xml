@@ -8,6 +8,7 @@
     <string name="macros_no_match">No matching macros</string>
     <string name="macros_no_match_body">Try a different search or clear the filters.</string>
     <string name="macro_new">New macro</string>
+    <string name="macro_open_triggers">Trigger areas</string>
     <string name="macro_run">Run</string>
     <string name="macro_more">More</string>
     <string name="macro_preview">Preview</string>

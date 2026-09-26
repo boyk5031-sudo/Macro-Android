@@ -16,3 +16,8 @@ First release. Scope per `docs/phase-0-feasibility-and-constraints.md` (MVP colu
 - Settings: theme, execution/retention/privacy options, permission center, accessibility disclosure and consent
   with versioning and withdrawal, audit log, help, diagnostics export, onboarding.
 - Security: no INTERNET; Keystore AES-GCM for sensitive values; no backup; forbidden-permission build check.
+- Trigger Areas (Phase 12): a screen zone that, when tapped in a game, injects taps to user-placed target points
+  (sequential or genuine multi-touch) through the accessibility service — no root, no new permissions. Editor
+  with canvas + numeric fields, per-app binding or manual arming, cooldown/repeat, in-editor test with landing
+  proof, SAF import/export, Room v2 (`trigger_configs`), accessibility disclosure v2. See
+  `docs/phase-12-trigger-areas.md`.

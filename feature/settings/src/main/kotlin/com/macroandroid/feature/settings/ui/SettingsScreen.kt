@@ -151,6 +151,12 @@ private fun SettingsContent(
             viewModel::setConfirmBeforeRun,
         )
         SwitchRow(R.string.set_keep_screen_on, R.string.set_keep_screen_on_help, p.keepScreenOnDuringRun, viewModel::setKeepScreenOn)
+        SwitchRow(
+            R.string.set_trigger_indicator,
+            R.string.set_trigger_indicator_help,
+            p.showTriggerIndicator,
+            viewModel::setShowTriggerIndicator,
+        )
         SwitchRow(R.string.set_verbose, R.string.set_verbose_help, p.verboseLogging, viewModel::setVerboseLogging)
         HorizontalDivider()
 

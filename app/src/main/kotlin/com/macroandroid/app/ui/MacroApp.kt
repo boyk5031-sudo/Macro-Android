@@ -37,8 +37,12 @@ import com.macroandroid.feature.scheduling.ui.schedulingGraph
 import com.macroandroid.feature.settings.ui.AppVersion
 import com.macroandroid.feature.settings.ui.HelpTopics
 import com.macroandroid.feature.settings.ui.OnboardingDestination
+import com.macroandroid.feature.settings.ui.navigateToDisclosure
 import com.macroandroid.feature.settings.ui.navigateToHelp
 import com.macroandroid.feature.settings.ui.settingsGraph
+import com.macroandroid.feature.trigger.ui.navigateToTriggerEditor
+import com.macroandroid.feature.trigger.ui.navigateToTriggers
+import com.macroandroid.feature.trigger.ui.triggerGraph
 
 @Composable
 fun MacroApp(appState: MacroAppState, mainState: MainUiState, viewModel: MainViewModel) {
@@ -115,6 +119,12 @@ private fun MacroNavHost(appState: MacroAppState, mainState: MainUiState, modifi
             onOpenPreview = navController::navigateToMacroPreview,
             onOpenExecution = navController::navigateToExecution,
             onOpenSchedules = { id: MacroId -> navController.navigateToSchedules(id) },
+            onOpenTriggers = navController::navigateToTriggers,
+            onBack = back,
+        )
+        triggerGraph(
+            onOpenEditor = navController::navigateToTriggerEditor,
+            onOpenDisclosure = navController::navigateToDisclosure,
             onBack = back,
         )
         executionGraph(

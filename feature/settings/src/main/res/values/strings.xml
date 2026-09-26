@@ -17,6 +17,8 @@
     <string name="set_confirm_before_run_help">Ask before starting macros that use accessibility steps</string>
     <string name="set_keep_screen_on">Keep screen on while running</string>
     <string name="set_keep_screen_on_help">Only while this app is in the foreground</string>
+    <string name="set_trigger_indicator">Show trigger area outline in games</string>
+    <string name="set_trigger_indicator_help">Off makes active trigger areas invisible; they still react to your taps. Each trigger can override this.</string>
     <string name="set_verbose">Verbose logging</string>
     <string name="set_verbose_help">Store debug-level entries in execution logs. Log text may include on-screen labels.</string>
     <string name="set_section_retention">History</string>
@@ -82,13 +84,13 @@
 
     <!-- Accessibility disclosure -->
     <string name="disc_title">Accessibility service disclosure</string>
-    <string name="disc_intro">MacroAndroid can use an Android accessibility service to perform the steps of macros you build, such as tapping a button or entering text in another app. Please read what this means before enabling it.</string>
+    <string name="disc_intro">MacroAndroid can use an Android accessibility service to perform the steps of macros you build, such as tapping a button or entering text in another app, and to run the Trigger Areas you configure: while a trigger zone is on screen, a tap inside it sends taps to the target points you placed. Please read what this means before enabling it.</string>
     <string name="disc_reads_title">What the service can read</string>
-    <string name="disc_reads_body">While one of your macros is running, the content of the window on screen – including text and labels of the app in front. It does not read anything when no macro is running.</string>
+    <string name="disc_reads_body">While one of your macros is running, the content of the window on screen – including text and labels of the app in front. For Trigger Areas it only learns which app is in front (to show the zone in the game you chose) and where you tapped inside the zone. It does not read anything when no macro is running and no trigger is armed.</string>
     <string name="disc_does_title">What it does with that</string>
-    <string name="disc_does_body">Only the steps you defined, in the order you defined them, on this device. Nothing is sent anywhere: the app has no internet permission.</string>
+    <string name="disc_does_body">Only the steps you defined, in the order you defined them, on this device. Trigger Areas draw a small transparent zone over the game through the service and inject the taps you placed – one tap from you, one activation. Nothing is sent anywhere: the app has no internet permission.</string>
     <string name="disc_never_title">What it never does</string>
-    <string name="disc_never_body">It never reads or types into password fields, never acts on the lock screen, never runs macros on its own, and never decides actions by itself. Each run is started by you or by a schedule you created.</string>
+    <string name="disc_never_body">It never reads or types into password fields, never acts on the lock screen, never runs macros on its own, never taps unless you tapped a trigger zone first, and never decides actions by itself. Each run is started by you or by a schedule you created.</string>
     <string name="disc_data_title">What is stored</string>
     <string name="disc_data_body">Execution logs on this device (step results, errors, and – if you enable verbose logging – short labels of targeted elements) and an audit trail of consent and service connections. You can delete both in Settings.</string>
     <string name="disc_control_title">You stay in control</string>

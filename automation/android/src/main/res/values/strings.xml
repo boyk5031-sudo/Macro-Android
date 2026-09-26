@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automation_android_a11y_service_label">Macro Android automation</string>
-    <string name="automation_android_a11y_service_summary">Performs taps, scrolling and text entry that you defined in your own macros, only while a macro you started is running.</string>
-    <string name="automation_android_a11y_service_description">Macro Android uses the accessibility service to perform the exact steps you wrote in a macro (tap a button, scroll a list, type text) inside the apps you chose. It reads screen content only to locate those elements while one of your macros is running. It never records your screen, never reads password fields, never acts on its own, and sends nothing off the device. You can revoke this at any time in Settings → Accessibility or in the app’s Permission center.</string>
+    <string name="automation_android_a11y_service_summary">Performs taps, scrolling and text entry that you defined in your own macros, and the tap points of Trigger Areas you configured, only when you start a macro or press a trigger.</string>
+    <string name="automation_android_a11y_service_description">Macro Android uses the accessibility service to perform the exact steps you wrote in a macro (tap a button, scroll a list, type text) inside the apps you chose, and to inject the tap points of Trigger Areas you configured when you press the trigger overlay. It reads screen content only to locate those elements while one of your macros is running. It never records your screen, never reads password fields, never acts on its own, and sends nothing off the device. You can revoke this at any time in Settings → Accessibility or in the app’s Permission center.</string>
     <string name="automation_android_channel_progress">Macro progress</string>
     <string name="automation_android_channel_attention">Needs your attention</string>
     <string name="automation_android_channel_results">Macro results</string>
@@ -14,5 +14,8 @@
     <string name="automation_android_notification_pause">Pause</string>
     <string name="automation_android_notification_resume">Resume</string>
     <string name="automation_android_fgs_title">Macro Android is running macros</string>
-    <string name="automation_android_fgs_text">%1$d active</string>
+    <plurals name="automation_android_fgs_text">
+        <item quantity="one">%1$d active</item>
+        <item quantity="other">%1$d active</item>
+    </plurals>
 </resources>

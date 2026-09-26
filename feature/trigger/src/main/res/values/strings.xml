@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trg_title">Trigger areas</string>
+    <string name="trg_new">New trigger area</string>
+    <string name="trg_import">Import trigger areas</string>
+    <string name="trg_export">Export trigger areas</string>
+    <plurals name="trg_imported">
+        <item quantity="one">Imported %1$d trigger area, disabled until you review it</item>
+        <item quantity="other">Imported %1$d trigger areas, disabled until you review them</item>
+    </plurals>
+    <string name="trg_empty_title">No trigger areas yet</string>
+    <string name="trg_empty_body">A trigger area is a zone on screen you tap during a game; each tap sends taps to the target points you configured. It is not a recording.</string>
+    <string name="trg_unnamed">Untitled trigger</string>
+    <string name="trg_bound_to">Active in %1$s</string>
+    <string name="trg_unbound">Any app – arm it manually</string>
+    <plurals name="trg_summary">
+        <item quantity="one">%1$d target · %2$s</item>
+        <item quantity="other">%1$d targets · %2$s</item>
+    </plurals>
+    <string name="trg_chip_on_screen">On screen</string>
+    <string name="trg_arm">Arm</string>
+    <string name="trg_armed">Armed</string>
+    <string name="trg_duplicate">Duplicate</string>
+    <string name="trg_delete">Delete</string>
+    <string name="trg_delete_title">Delete trigger area?</string>
+    <string name="trg_delete_body">The zone and its target points are removed. If it is on screen right now it disappears immediately.</string>
+    <string name="trg_indicator_setting">Show trigger outline during gameplay</string>
+    <string name="trg_indicator_setting_body">Off makes the zone fully transparent; it still reacts to taps.</string>
+    <plurals name="trg_runtime_active">
+        <item quantity="one">%1$d trigger area on screen</item>
+        <item quantity="other">%1$d trigger areas on screen</item>
+    </plurals>
+    <string name="trg_runtime_blocked">Armed but hidden: %1$s</string>
+    <string name="trg_runtime_idle">Nothing on screen. Triggers bound to an app appear when that app is in front; others when you arm them.</string>
+
+    <!-- Access checklist -->
+    <string name="trg_access_title">Access needed for trigger areas</string>
+    <string name="trg_access_body">Trigger areas draw a small overlay and inject taps through the accessibility service – no root, no “draw over other apps” permission. Each item below is checked live; nothing is assumed.</string>
+    <string name="trg_req_consent">Consent to the accessibility service</string>
+    <string name="trg_req_consent_why">Your explicit agreement to the current disclosure is required before the service may show trigger zones and inject taps in other apps. If you agreed to an earlier version, read and agree again.</string>
+    <string name="trg_req_enabled">Service enabled in Android Settings</string>
+    <string name="trg_req_enabled_why">Turn on “MacroAndroid” under Settings → Accessibility → Installed apps.</string>
+    <string name="trg_req_enabled_why_restricted">Android may show “Restricted setting” for side-loaded apps: open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="trg_req_connected">Service connected</string>
+    <string name="trg_req_connected_why">Android has not bound the service yet. Toggle it off and on in Accessibility settings if this persists.</string>
+    <string name="trg_req_gestures">Touch injection available</string>
+    <string name="trg_req_gestures_why">The bound service does not report gesture support. Re-enable the service after updating the app.</string>
+    <string name="trg_access_consent_cta">Read &amp; agree</string>
+    <string name="trg_access_settings_cta">Open settings</string>
+
+    <!-- Editor -->
+    <string name="trg_editor_new">New trigger area</string>
+    <string name="trg_editor_edit">Edit trigger area</string>
+    <string name="trg_save">Save</string>
+    <string name="trg_canvas_area_label">TRIGGER</string>
+    <string name="trg_canvas_hint">Tap empty space to add a target point. Drag points and the trigger zone; drag its corner to resize. Shaded bands are system bars.</string>
+    <string name="trg_add_point">Add point</string>
+    <string name="trg_test_here">Test here</string>
+    <string name="trg_test_in_game">Test in game</string>
+    <string name="trg_test_done">Test finished – all target taps were injected</string>
+    <plurals name="trg_test_countdown">
+        <item quantity="one">Switch to your game – injecting in %1$d second</item>
+        <item quantity="other">Switch to your game – injecting in %1$d seconds</item>
+    </plurals>
+    <string name="trg_test_running_here">Injecting test taps… rings show where they landed</string>
+    <string name="trg_test_running_game">Injecting test taps in the foreground app…</string>
+    <plurals name="trg_test_received">
+        <item quantity="one">%1$d tap received on this screen</item>
+        <item quantity="other">%1$d taps received on this screen</item>
+    </plurals>
+    <string name="trg_compat_orientation">This trigger was created in the other orientation. Rotate the device to edit or use it; it stays hidden until then.</string>
+    <string name="trg_compat_aspect">This display has a different aspect ratio than the one this trigger was created on. Check the points before use.</string>
+    <string name="trg_error_for_target">Target %1$s: %2$s</string>
+    <string name="trg_section_general">General</string>
+    <string name="trg_name">Name</string>
+    <string name="trg_bind_app">Game / app</string>
+    <string name="trg_bind_app_help">Bound triggers appear automatically when that app is in front and never over other apps.</string>
+    <string name="trg_any_app">Any app (arm manually from the list)</string>
+    <string name="trg_enabled">Enabled</string>
+    <string name="trg_section_area">Trigger zone (pixels on %1$d × %2$d)</string>
+    <string name="trg_x">X</string>
+    <string name="trg_y">Y</string>
+    <string name="trg_width">Width</string>
+    <string name="trg_height">Height</string>
+    <string name="trg_section_execution">Execution</string>
+    <string name="trg_mode_sequential">Sequential</string>
+    <string name="trg_mode_multitouch">Multi-touch</string>
+    <string name="trg_mode_sequential_help">Targets are tapped one after another with the delay set on each point.</string>
+    <string name="trg_mode_multitouch_help">All enabled targets go down together as one multi-finger gesture (genuine simultaneous contacts, max 10). Per-point delays are ignored.</string>
+    <string name="trg_cooldown_ms">Cooldown ms</string>
+    <string name="trg_repeat_count">Repeat ×</string>
+    <string name="trg_repeat_delay_ms">Repeat gap ms</string>
+    <string name="trg_indicator_override">Outline during gameplay</string>
+    <string name="trg_indicator_follow">Follow setting</string>
+    <string name="trg_indicator_show">Show</string>
+    <string name="trg_indicator_hide">Hide</string>
+    <string name="trg_points_title">Target points · %1$d/10</string>
+    <string name="trg_point_n">Target %1$d</string>
+    <string name="trg_move_up">Move up</string>
+    <string name="trg_move_down">Move down</string>
+    <string name="trg_delete_point">Delete point</string>
+    <string name="trg_action_tap">Tap</string>
+    <string name="trg_action_long_press">Long press</string>
+    <string name="trg_space_relative">Moves with zone</string>
+    <string name="trg_delay_before_ms">Delay before ms</string>
+    <string name="trg_hold_ms">Hold ms</string>
+</resources>

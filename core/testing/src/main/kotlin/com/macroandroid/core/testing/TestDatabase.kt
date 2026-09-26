@@ -8,6 +8,7 @@ import com.macroandroid.core.database.dao.ExecutionDao
 import com.macroandroid.core.database.dao.ImportedApkDao
 import com.macroandroid.core.database.dao.MacroDao
 import com.macroandroid.core.database.dao.ScheduleDao
+import com.macroandroid.core.database.dao.TriggerDao
 import com.macroandroid.core.database.di.DatabaseModule
 import dagger.Module
 import dagger.Provides
@@ -30,4 +31,5 @@ object TestDatabaseModule {
     @Provides fun importedApkDao(db: MacroDatabase): ImportedApkDao = db.importedApkDao()
     @Provides fun scheduleDao(db: MacroDatabase): ScheduleDao = db.scheduleDao()
     @Provides fun executionDao(db: MacroDatabase): ExecutionDao = db.executionDao()
+    @Provides fun triggerDao(db: MacroDatabase): TriggerDao = db.triggerDao()
 }

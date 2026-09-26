@@ -82,6 +82,7 @@ dependencies {
     implementation(projects.feature.execution)
     implementation(projects.feature.scheduling)
     implementation(projects.feature.settings)
+    implementation(projects.feature.trigger)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
@@ -131,13 +132,16 @@ val forbiddenPermissions = listOf(
 androidComponents {
     onVariants { variant ->
         val manifest = variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.MERGED_MANIFEST)
+        // Local copies only: the doLast lambda must not capture the build script (configuration cache).
+        val forbidden: List<String> = forbiddenPermissions.toList()
+        val manifestFile = manifest.map { it.asFile }
         val task = tasks.register("check${variant.name.replaceFirstChar(Char::uppercase)}ForbiddenPermissions") {
             group = "verification"
             description = "Asserts the merged manifest of ${variant.name} declares none of the forbidden permissions."
             inputs.file(manifest)
             doLast {
-                val text = manifest.get().asFile.readText()
-                val found = forbiddenPermissions.filter { text.contains("\"$it\"") }
+                val text = manifestFile.get().readText()
+                val found = forbidden.filter { text.contains("\"$it\"") }
                 check(found.isEmpty()) { "Merged manifest declares forbidden permission(s): $found" }
             }
         }

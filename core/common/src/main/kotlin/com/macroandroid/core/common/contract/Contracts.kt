@@ -29,7 +29,11 @@ interface ShortcutsContract {
 
 /** Accessibility consent + service status for gates and the permission center. */
 interface ConsentContract {
+    /** Consent was given to some version of the disclosure. */
     val consentGranted: Flow<Boolean>
+
+    /** Consent was given to the disclosure version currently shipped (re-agreement needed after a bump). */
+    val consentCurrent: Flow<Boolean>
     val serviceEnabledInSettings: Flow<Boolean>
     val serviceConnected: Flow<Boolean>
     suspend fun grantConsent()

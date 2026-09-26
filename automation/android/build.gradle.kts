@@ -12,6 +12,7 @@ dependencies {
     api(projects.core.common)
     implementation(projects.core.database)
     implementation(projects.core.datastore)
+    implementation(projects.core.platform)
     implementation(projects.core.security)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.process)

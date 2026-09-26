@@ -26,6 +26,7 @@ fun NavGraphBuilder.macrosGraph(
     onOpenPreview: (MacroId) -> Unit,
     onOpenExecution: (String) -> Unit,
     onOpenSchedules: (MacroId) -> Unit,
+    onOpenTriggers: () -> Unit,
     onBack: () -> Unit,
 ) {
     composable<MacrosDestination> {
@@ -34,6 +35,7 @@ fun NavGraphBuilder.macrosGraph(
             onOpenPreview = onOpenPreview,
             onOpenExecution = onOpenExecution,
             onOpenSchedules = onOpenSchedules,
+            onOpenTriggers = onOpenTriggers,
         )
     }
     composable<MacroEditorDestination> { entry ->

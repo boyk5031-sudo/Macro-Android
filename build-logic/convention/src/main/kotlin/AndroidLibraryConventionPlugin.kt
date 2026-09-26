@@ -17,9 +17,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 configureKotlinAndroid(this)
                 testOptions.targetSdk = Sdk.TARGET
                 lint.targetSdk = Sdk.TARGET
-                // Resources in ":feature:apps" must be prefixed "feature_apps_" to avoid merge collisions.
-                resourcePrefix = path.split("""\W""".toRegex()).drop(1).distinct()
-                    .joinToString(separator = "_").lowercase() + "_"
+                // Resource names use short per-module prefixes (apps_, apk_, macro(s)_, exe_, sch_, set_/disc_/perm_,
+                // trg_, automation_android_, core-ui action_/err_) – see docs/phase-1/05-architecture.md. A Gradle
+                // resourcePrefix is deliberately not enforced: lint's ResourceName would demand the long module path.
                 file("consumer-rules.pro").takeIf { it.exists() }?.let { defaultConfig.consumerProguardFiles(it) }
             }
             extensions.configure<LibraryAndroidComponentsExtension> {
