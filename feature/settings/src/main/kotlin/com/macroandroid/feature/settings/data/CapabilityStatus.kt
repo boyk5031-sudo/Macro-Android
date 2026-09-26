@@ -53,7 +53,12 @@ class CapabilityStatus @Inject constructor(
     val versionCode: Long
         get() = runCatching {
             val info = context.packageManager.getPackageInfo(context.packageName, 0)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                info.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                info.versionCode.toLong()
+            }
         }.getOrDefault(0L)
 
     fun openNotificationSettings() = launch(

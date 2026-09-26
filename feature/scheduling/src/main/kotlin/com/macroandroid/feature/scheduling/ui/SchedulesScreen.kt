@@ -203,7 +203,7 @@ private fun days(set: Set<DayOfWeek>): String = when {
     set.size == DayOfWeek.entries.size -> stringResource(R.string.sch_every_day)
     set == setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) -> stringResource(R.string.sch_weekends)
     set == DayOfWeek.entries.toSet() - setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) -> stringResource(R.string.sch_weekdays)
-    else -> DayOfWeek.entries.filter { it in set }.joinToString(" ") { dayShort(it) }
+    else -> DayOfWeek.entries.filter { it in set }.map { dayShort(it) }.joinToString(" ")
 }
 
 @Composable

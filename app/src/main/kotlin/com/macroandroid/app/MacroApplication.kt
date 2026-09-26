@@ -27,7 +27,9 @@ class MacroApplication : Application(), Configuration.Provider {
     @Inject lateinit var shortcuts: AppShortcuts
     @Inject lateinit var logger: Logger
     @Inject lateinit var clock: Clock
-    @Inject @field:ApplicationScope lateinit var appScope: CoroutineScope
+    @Inject
+    @field:ApplicationScope
+    lateinit var appScope: CoroutineScope
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()

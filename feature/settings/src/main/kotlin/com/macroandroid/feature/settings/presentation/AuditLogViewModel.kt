@@ -6,7 +6,6 @@ import com.macroandroid.core.database.repository.AuditEntry
 import com.macroandroid.core.database.repository.ExecutionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
