@@ -93,6 +93,21 @@ class MacroExecutorTest {
     }
 
     @Test
+    fun `step test runs exactly the requested step even when the macro is disabled`() = runTest {
+        val h = Harness(this)
+        val m = macro(log(1, "first"), log(2, "second"), log(3, "third")).copy(enabled = false)
+        h.add(m)
+        val target = m.steps[1]
+        val handle = (h.executor.enqueue(RunRequest(m.id, ExecutionOrigin.StepTest(target.id), "t1")) as AppResult.Ok).value
+        val outcome = handle.await()
+        assertThat(outcome.state).isEqualTo(ExecutionState.COMPLETED)
+        val messages = h.store.logs.map { it.message }
+        assertThat(messages).contains("second")
+        assertThat(messages).containsNoneOf("first", "third")
+        assertThat(h.store.attempts.map { it.stepId }).containsExactly(target.id)
+    }
+
+    @Test
     fun `step timeout then retry with backoff then abort`() = runTest {
         val h = Harness(this)
         h.a11y.activePackageName = "x"

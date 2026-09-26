@@ -258,8 +258,14 @@ class MacroExecutor(
             transition(ExecutionState.RUNNING)
             ports.hooks.onRunningStarted(record, macro)
 
+            // FR-MAC-5: a step test executes exactly one step (containers run with their children) as a top-level list.
+            val stepsToRun = when (val origin = request.origin) {
+                is ExecutionOrigin.StepTest -> macro.allSteps().firstOrNull { it.id == origin.stepId }?.let { listOf(it.copy(enabled = true)) }
+                    ?: return finish(ExecutionState.REJECTED, AppError(ErrorCode.MACRO_NOT_FOUND, "step ${origin.stepId}"))
+                else -> macro.steps
+            }
             val result = withTimeoutOrNull(macro.executionPolicy.totalTimeout) {
-                executeList(macro.steps, topLevel = true)
+                executeList(stepsToRun, topLevel = true)
             } ?: return finish(ExecutionState.FAILED, AppError(ErrorCode.MACRO_TIMEOUT))
 
             return when (result) {

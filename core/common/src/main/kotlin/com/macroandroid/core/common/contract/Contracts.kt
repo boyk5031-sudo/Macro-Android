@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
 interface MacroRunnerContract {
     /** Returns the execution id or a policy/validation error. */
     suspend fun runMacro(macroId: String, runRequestId: String? = null): AppResult<String>
+
+    /** Runs a single saved step in isolation (FR-MAC-5); returns the execution id. */
+    suspend fun testStep(macroId: String, stepId: String): AppResult<String>
     fun cancel(executionId: String)
     val activeCount: Flow<Int>
 }

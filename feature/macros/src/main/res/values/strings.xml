@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- List -->
+    <string name="macros_title">Macros</string>
+    <string name="macros_search_hint">Search macros</string>
+    <string name="macros_empty_title">No macros yet</string>
+    <string name="macros_empty_body">Create a macro to automate a sequence of steps you define. Steps that read the screen need the accessibility service, which you enable explicitly.</string>
+    <string name="macros_no_match">No matching macros</string>
+    <string name="macros_no_match_body">Try a different search or clear the filters.</string>
+    <string name="macro_new">New macro</string>
+    <string name="macro_run">Run</string>
+    <string name="macro_more">More</string>
+    <string name="macro_preview">Preview</string>
+    <string name="macro_schedules">Schedules</string>
+    <string name="macro_duplicate">Duplicate</string>
+    <string name="macro_export">Export</string>
+    <string name="macro_export_all">Export all</string>
+    <string name="macro_import">Import</string>
+    <string name="macro_delete">Delete</string>
+    <string name="macro_delete_title">Delete macro?</string>
+    <string name="macro_delete_body">“%1$s” and its schedules will be removed. Execution history is kept.</string>
+    <string name="macro_deleted">Deleted “%1$s”</string>
+    <string name="macro_duplicated">Created “%1$s”</string>
+    <string name="macro_run_started">Running “%1$s”</string>
+    <string name="macro_open_execution">Open</string>
+    <string name="macro_confirm_run_title">Run macro?</string>
+    <string name="macro_confirm_run_body">“%1$s” will start now and may interact with other apps on screen.</string>
+    <string name="macro_filter_enabled">Enabled</string>
+    <string name="macro_filter_a11y">Needs accessibility</string>
+    <string name="macro_filter_scheduled">Scheduled</string>
+    <string name="macro_profile_all">All profiles</string>
+    <string name="macro_chip_a11y">Accessibility</string>
+    <string name="macro_chip_draft">Draft</string>
+    <string name="macro_chip_disabled">Disabled</string>
+    <string name="macro_chip_invalid">Invalid</string>
+    <plurals name="macro_step_count">
+        <item quantity="one">%d step</item>
+        <item quantity="other">%d steps</item>
+    </plurals>
+    <plurals name="macro_chip_schedules">
+        <item quantity="one">%d schedule</item>
+        <item quantity="other">%d schedules</item>
+    </plurals>
+
+    <!-- Export / import -->
+    <plurals name="macro_export_title">
+        <item quantity="one">Export %d macro</item>
+        <item quantity="other">Export %d macros</item>
+    </plurals>
+    <string name="macro_export_body">You will choose where to save the JSON file. Secure values are left out unless you include them.</string>
+    <string name="macro_export_include_secrets">Include secure values in plain text</string>
+    <string name="macro_export_secrets_warning">The file will contain your secrets unencrypted. Only do this for a backup you control.</string>
+    <plurals name="macro_exported">
+        <item quantity="one">Exported %d macro</item>
+        <item quantity="other">Exported %d macros</item>
+    </plurals>
+    <plurals name="macro_imported">
+        <item quantity="one">Imported %d macro</item>
+        <item quantity="other">Imported %d macros</item>
+    </plurals>
+    <string name="macro_import_preview_title">Import %1$d macro(s) (schema v%2$d)</string>
+    <string name="macro_import_conflict">A macro with this name already exists in the same profile.</string>
+    <string name="macro_import_redacted">Contains secure values that were not exported; re-enter them after import.</string>
+    <string name="macro_import_rename">Rename</string>
+    <string name="macro_import_replace">Replace</string>
+    <string name="macro_import_skip">Skip</string>
+    <plurals name="macro_import_n">
+        <item quantity="one">Import %d</item>
+        <item quantity="other">Import %d</item>
+    </plurals>
+
+    <!-- Editor -->
+    <string name="macro_editor_new">New macro</string>
+    <string name="macro_editor_edit">Edit macro</string>
+    <string name="macro_save">Save</string>
+    <string name="macro_saved">Saved</string>
+    <string name="macro_name">Name</string>
+    <string name="macro_description">Description</string>
+    <string name="macro_profile">Profile</string>
+    <string name="macro_add_tag">Add tag</string>
+    <string name="macro_add">Add</string>
+    <string name="macro_enabled">Enabled</string>
+    <string name="macro_confirm_before_run">Ask for confirmation before each run</string>
+    <string name="macro_total_timeout">Total time limit</string>
+    <string name="macro_requires_a11y_note">This macro needs the accessibility service</string>
+    <string name="macro_steps_title">Steps (%1$d of %2$d)</string>
+    <string name="macro_add_step">Add step</string>
+    <string name="macro_pick_action">Choose an action</string>
+    <string name="macro_edit">Edit</string>
+    <string name="macro_move_up">Move up</string>
+    <string name="macro_move_down">Move down</string>
+    <string name="macro_insert_after">Insert step after</string>
+    <string name="macro_disable_step">Disable step</string>
+    <string name="macro_enable_step">Enable step</string>
+    <string name="macro_test_step">Test this step</string>
+    <string name="macro_step_removed">Step removed</string>
+    <string name="macro_undo">Undo</string>
+    <string name="macro_step_test_started">Step test started</string>
+    <string name="macro_branch_then">then</string>
+    <string name="macro_branch_else">otherwise</string>
+    <string name="macro_branch_body">body</string>
+    <string name="macro_draft_found">An unsaved draft of this macro was found.</string>
+    <string name="macro_restore_draft">Restore</string>
+    <string name="macro_discard">Discard</string>
+    <string name="macro_keep_draft">Keep draft</string>
+    <string name="macro_unsaved_title">Unsaved changes</string>
+    <string name="macro_unsaved_body">Keep the changes as a draft to continue later, or discard them.</string>
+    <string name="macro_done">Done</string>
+    <string name="macro_remove">Remove</string>
+    <string name="macro_not_found">Macro not found</string>
+    <string name="macro_preview_empty">This macro has no steps.</string>
+
+    <!-- Step options -->
+    <string name="macro_step_options">Step options</string>
+    <string name="macro_step_label">Label (for jumps)</string>
+    <string name="macro_step_timeout">Time limit (blank = default)</string>
+    <string name="macro_step_retry">Retry on failure</string>
+    <string name="macro_step_attempts">Attempts</string>
+    <string name="macro_step_backoff">Back-off</string>
+    <string name="macro_step_initial_delay">Delay before retry</string>
+    <string name="macro_step_on_failure">On failure</string>
+    <string name="macro_step_jump_label">Jump to label</string>
+    <string name="macro_step_continue_on_cancel">Finish this step even if the run is cancelled</string>
+    <string name="macro_failure_abort">Stop the macro</string>
+    <string name="macro_failure_continue">Continue with next step</string>
+    <string name="macro_failure_jump">Jump to a labelled step</string>
+    <string name="macro_unit_seconds">s</string>
+
+    <!-- Actions -->
+    <string name="macro_action_launch_app">Launch app</string>
+    <string name="macro_action_open_url">Open URL</string>
+    <string name="macro_action_wait">Wait</string>
+    <string name="macro_action_global">System action</string>
+    <string name="macro_action_click">Tap element</string>
+    <string name="macro_action_scroll">Scroll</string>
+    <string name="macro_action_enter_text">Enter text</string>
+    <string name="macro_action_wait_for">Wait for element</string>
+    <string name="macro_action_notify">Show notification</string>
+    <string name="macro_action_set_variable">Set variable</string>
+    <string name="macro_action_if">If / otherwise</string>
+    <string name="macro_action_repeat">Repeat</string>
+    <string name="macro_action_parallel">In parallel</string>
+    <string name="macro_action_log">Log message</string>
+    <string name="macro_action_stop">Stop macro</string>
+    <string name="macro_help_launch_app">Open an installed app by package name.</string>
+    <string name="macro_help_open_url">Open a web or app link.</string>
+    <string name="macro_help_wait">Pause for a fixed time.</string>
+    <string name="macro_help_global">Back, Home, Recents, notifications or quick settings.</string>
+    <string name="macro_help_click">Tap or long-press an on-screen element you describe.</string>
+    <string name="macro_help_scroll">Scroll a list or the screen.</string>
+    <string name="macro_help_enter_text">Type into a field; secrets are stored encrypted.</string>
+    <string name="macro_help_wait_for">Wait until an element appears or disappears.</string>
+    <string name="macro_help_notify">Post a notification from this app.</string>
+    <string name="macro_help_set_variable">Store a value for later steps.</string>
+    <string name="macro_help_if">Run different steps depending on a condition.</string>
+    <string name="macro_help_repeat">Run steps several times or while a condition holds.</string>
+    <string name="macro_help_parallel">Run background-safe steps at the same time.</string>
+    <string name="macro_help_log">Write a line to the execution log.</string>
+    <string name="macro_help_stop">End the macro early with success or failure.</string>
+
+    <!-- Fields -->
+    <string name="macro_package_name">Package name</string>
+    <string name="macro_field_wait_for_window">Wait for the app window</string>
+    <string name="macro_field_window_wait">Window wait</string>
+    <string name="macro_field_url">URL</string>
+    <string name="macro_field_prefer_package">Preferred app (optional package)</string>
+    <string name="macro_field_duration">Duration</string>
+    <string name="macro_field_global_action">Action</string>
+    <string name="macro_field_long_click">Long press</string>
+    <string name="macro_field_require_visible">Require the element to be visible</string>
+    <string name="macro_field_direction">Direction</string>
+    <string name="macro_field_times">Times</string>
+    <string name="macro_field_text">Text</string>
+    <string name="macro_field_append">Append to existing text</string>
+    <string name="macro_field_node_state">Wait until it</string>
+    <string name="macro_field_title">Title</string>
+    <string name="macro_field_tap_opens_macro">Tapping opens this macro</string>
+    <string name="macro_field_set_mode">Value source</string>
+    <string name="macro_field_increment_by">Increment by</string>
+    <string name="macro_field_part">Part %1$d</string>
+    <string name="macro_field_add_part">Add part</string>
+    <string name="macro_field_repeat_while">Repeat while a condition holds</string>
+    <string name="macro_field_count">Count</string>
+    <string name="macro_field_max_iterations">Maximum iterations</string>
+    <string name="macro_field_delay_between">Delay between iterations</string>
+    <string name="macro_field_fail_fast">Stop all branches on first failure</string>
+    <string name="macro_field_level">Level</string>
+    <string name="macro_field_message">Message</string>
+    <string name="macro_field_stop_success">Count as success</string>
+    <string name="macro_variable_name">Variable name</string>
+    <string name="macro_value">Value</string>
+    <string name="macro_value_type">Type</string>
+    <string name="macro_tv_literal">Text</string>
+    <string name="macro_tv_template">Template</string>
+    <string name="macro_tv_variable">Variable</string>
+    <string name="macro_tv_secure">Secret</string>
+    <string name="macro_tv_template_hint">Use {{name}} to insert a variable.</string>
+    <string name="macro_tv_secure_stored">A secret is stored for this field (encrypted, never shown).</string>
+    <string name="macro_secure_title">Store a secret</string>
+    <string name="macro_secure_body">The value is encrypted with a key that never leaves this device and is not included in exports unless you choose so.</string>
+    <string name="macro_secure_value">Secret value</string>
+    <string name="macro_secure_store">Store</string>
+
+    <!-- Selector -->
+    <string name="macro_selector_specify">Target a specific element</string>
+    <string name="macro_selector_text">Text</string>
+    <string name="macro_selector_desc">Content description</string>
+    <string name="macro_selector_view_id">View id</string>
+    <string name="macro_selector_class">Class name</string>
+    <string name="macro_selector_package">Package</string>
+    <string name="macro_selector_match">Text match</string>
+    <string name="macro_selector_index">Match index</string>
+    <string name="macro_selector_clickable_ancestor">Use nearest clickable parent if needed</string>
+    <string name="macro_selector_empty">Enter at least one of text, description, view id or class.</string>
+
+    <!-- Conditions -->
+    <string name="macro_condition">Condition</string>
+    <string name="macro_cond_var_equals">Variable equals</string>
+    <string name="macro_cond_var_compare">Variable compares to number</string>
+    <string name="macro_cond_var_contains">Variable contains text</string>
+    <string name="macro_cond_node_exists">Element exists on screen</string>
+    <string name="macro_cond_app_installed">App is installed</string>
+    <string name="macro_cond_not">Not</string>
+    <string name="macro_cond_all">All of</string>
+    <string name="macro_cond_any">Any of</string>
+    <string name="macro_cond_operator">Operator</string>
+    <string name="macro_cond_needle">Text to find</string>
+    <string name="macro_cond_add">Add condition</string>
+
+    <!-- Preview words (MacroSentences) -->
+    <string name="w_launch">Launch</string>
+    <string name="w_open_url">Open URL</string>
+    <string name="w_wait">Wait</string>
+    <string name="w_press">Press</string>
+    <string name="w_click">Tap</string>
+    <string name="w_long_click">Long-press</string>
+    <string name="w_scroll">Scroll</string>
+    <string name="w_enter_text">Enter text into</string>
+    <string name="w_enter_secret">Enter a secret value into</string>
+    <string name="w_wait_for">Wait until</string>
+    <string name="w_appears">appears</string>
+    <string name="w_disappears">disappears</string>
+    <string name="w_notify">Show notification</string>
+    <string name="w_set">Set</string>
+    <string name="w_if">If</string>
+    <string name="w_then">then</string>
+    <string name="w_else">otherwise</string>
+    <string name="w_repeat">Repeat</string>
+    <string name="w_times">times</string>
+    <string name="w_while">while</string>
+    <string name="w_parallel">In parallel</string>
+    <string name="w_log">Log</string>
+    <string name="w_stop">Stop</string>
+    <string name="w_success">with success</string>
+    <string name="w_failure">with failure</string>
+    <string name="w_disabled">(disabled)</string>
+    <string name="w_node">the element</string>
+    <string name="w_variable">variable</string>
+    <string name="w_exists">exists</string>
+    <string name="w_installed">is installed</string>
+    <string name="w_not">not</string>
+    <string name="w_and">and</string>
+    <string name="w_or">or</string>
+    <string name="w_current_time">the current time</string>
+    <string name="w_text_of">the text of</string>
+</resources>

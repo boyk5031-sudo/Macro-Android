@@ -2,6 +2,7 @@ package com.macroandroid.automation.android.service
 
 import com.macroandroid.automation.model.ExecutionId
 import com.macroandroid.automation.model.MacroId
+import com.macroandroid.automation.model.StepId
 import com.macroandroid.core.common.contract.MacroRunnerContract
 import com.macroandroid.core.common.error.AppResult
 import com.macroandroid.core.common.error.map
@@ -23,6 +24,9 @@ class MacroRunnerContractAdapter @Inject constructor(
 
     override suspend fun runMacro(macroId: String, runRequestId: String?): AppResult<String> =
         runner.run(MacroId(macroId), runRequestId = runRequestId ?: Uuid.random().toString()).map { it.id.value }
+
+    override suspend fun testStep(macroId: String, stepId: String): AppResult<String> =
+        runner.testStep(MacroId(macroId), StepId(stepId)).map { it.id.value }
 
     override fun cancel(executionId: String) {
         runner.cancel(ExecutionId(executionId))
