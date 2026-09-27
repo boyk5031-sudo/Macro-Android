@@ -42,7 +42,8 @@ data class RuntimeDecision(
 object TriggerRuntimePolicy {
     fun decide(input: RuntimeInput): RuntimeDecision {
         if (input.foregroundPackage == input.ownPackage) return RuntimeDecision.IDLE
-        input.editingId?.let { return decideEditing(input, it) }
+        val editingId = input.editingId
+        if (editingId != null) return decideEditing(input, editingId)
         val candidates = input.configurations.filter { c ->
             c.enabled && (
                 (c.packageName != null && c.packageName == input.foregroundPackage) ||
@@ -50,14 +51,12 @@ object TriggerRuntimePolicy {
                 )
         }
         if (candidates.isEmpty()) return RuntimeDecision.IDLE
-        if (!input.accessReady) return RuntimeDecision(emptyList(), ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
-        if (!input.screenInteractive) return RuntimeDecision(emptyList(), ErrorCode.PRECONDITION_SCREEN_OFF)
-        val geometry = input.geometry
-        if (geometry == null || !geometry.isValid) return RuntimeDecision(emptyList(), ErrorCode.DISPLAY_UNAVAILABLE)
+        val blocked = blockingReason(input, candidates)
+        if (blocked != null) return RuntimeDecision(emptyList(), blocked)
+        val geometry = checkNotNull(input.geometry) // blockingReason guarantees a valid display
         val oriented = candidates.filter { c ->
             CoordinateConverter.compatibility(c.authoredDisplay, geometry) != DisplayCompatibility.ORIENTATION_MISMATCH
         }
-        if (oriented.isEmpty()) return RuntimeDecision(emptyList(), ErrorCode.DISPLAY_ORIENTATION_MISMATCH)
         return RuntimeDecision(oriented, null)
     }
 
@@ -65,13 +64,21 @@ object TriggerRuntimePolicy {
         val config = input.configurations.firstOrNull { it.id == id }
             ?: return RuntimeDecision(emptyList(), ErrorCode.TRIGGER_NOT_FOUND)
         if (config.packageName != null && config.packageName != input.foregroundPackage) return RuntimeDecision.IDLE
-        if (!input.accessReady) return RuntimeDecision(emptyList(), ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
-        if (!input.screenInteractive) return RuntimeDecision(emptyList(), ErrorCode.PRECONDITION_SCREEN_OFF)
+        val blocked = blockingReason(input, listOf(config))
+        return if (blocked != null) RuntimeDecision(emptyList(), blocked) else RuntimeDecision(emptyList(), null, editing = config)
+    }
+
+    /** Shared access / screen / display / orientation checks; null when [candidates] may be shown. */
+    private fun blockingReason(input: RuntimeInput, candidates: List<TriggerConfiguration>): ErrorCode? {
         val geometry = input.geometry
-        if (geometry == null || !geometry.isValid) return RuntimeDecision(emptyList(), ErrorCode.DISPLAY_UNAVAILABLE)
-        if (CoordinateConverter.compatibility(config.authoredDisplay, geometry) == DisplayCompatibility.ORIENTATION_MISMATCH) {
-            return RuntimeDecision(emptyList(), ErrorCode.DISPLAY_ORIENTATION_MISMATCH)
+        return when {
+            !input.accessReady -> ErrorCode.GESTURE_DISPATCH_UNAVAILABLE
+            !input.screenInteractive -> ErrorCode.PRECONDITION_SCREEN_OFF
+            geometry == null || !geometry.isValid -> ErrorCode.DISPLAY_UNAVAILABLE
+            candidates.all { c ->
+                CoordinateConverter.compatibility(c.authoredDisplay, geometry) == DisplayCompatibility.ORIENTATION_MISMATCH
+            } -> ErrorCode.DISPLAY_ORIENTATION_MISMATCH
+            else -> null
         }
-        return RuntimeDecision(emptyList(), null, editing = config)
     }
 }

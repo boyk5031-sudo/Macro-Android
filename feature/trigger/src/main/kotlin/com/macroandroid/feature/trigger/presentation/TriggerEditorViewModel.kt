@@ -80,10 +80,12 @@ data class TriggerEditorUiState(
     val canTest: Boolean
         get() = config != null && errors.none { it.code != ErrorCode.NAME_INVALID } &&
             access?.ready == true && testPhase == TestPhase.Idle
+
     /** A single point can be tested even while the configuration as a whole has no enabled target yet. */
     val canTestPoint: Boolean
         get() = config != null && access?.ready == true && testPhase == TestPhase.Idle &&
             errors.none { it.code != ErrorCode.NAME_INVALID && it.code != ErrorCode.TRIGGER_NO_TARGETS }
+
     val canAddPoint: Boolean get() = (config?.targetPoints?.size ?: 0) < TriggerLimits.MAX_TARGETS
 
     /** On-screen edit works on the saved configuration; unsaved changes would be silently lost otherwise. */

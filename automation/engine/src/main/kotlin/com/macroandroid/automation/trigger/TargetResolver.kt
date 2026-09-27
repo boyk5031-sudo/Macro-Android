@@ -24,21 +24,53 @@ object TargetResolver {
         ignoreEnabledFlag: Boolean = false,
         onlyPoint: TargetPointId? = null,
     ): AppResult<InjectionPlan> {
-        if (!config.enabled && !ignoreEnabledFlag) return AppResult.err(ErrorCode.TRIGGER_DISABLED)
-        if (!geometry.isValid) return AppResult.err(ErrorCode.DISPLAY_UNAVAILABLE)
-        if (!capability.available) {
-            return AppResult.err(capability.reason ?: ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
-        }
-        val structural = TriggerValidator.validate(config).filterNot { it.code == ErrorCode.NAME_INVALID }
-            .filterNot { onlyPoint != null && it.code == ErrorCode.TRIGGER_NO_TARGETS }
-        structural.firstOrNull()?.let { return AppResult.err(it) }
+        precondition(config, geometry, capability, ignoreEnabledFlag, onlyPoint)?.let { return AppResult.err(it) }
         val compatibility = CoordinateConverter.compatibility(config.authoredDisplay, geometry)
         if (compatibility == DisplayCompatibility.ORIENTATION_MISMATCH) {
             return AppResult.err(ErrorCode.DISPLAY_ORIENTATION_MISMATCH)
         }
-        if (onlyPoint != null && config.targetPoints.none { it.id == onlyPoint }) {
-            return AppResult.err(ErrorCode.TRIGGER_NO_TARGETS, detail = "point ${onlyPoint.value} not in configuration")
+        val contacts = when (val resolved = contacts(config, geometry, onlyPoint)) {
+            is AppResult.Ok -> resolved.value
+            is AppResult.Err -> return resolved
         }
+        if (config.executionMode == ExecutionMode.MULTI_TOUCH && onlyPoint == null &&
+            contacts.size > capability.maxSimultaneousContacts
+        ) {
+            return AppResult.err(
+                ErrorCode.LIMIT_EXCEEDED,
+                detail = "multi-touch supports ${capability.maxSimultaneousContacts} contacts",
+            )
+        }
+        return AppResult.ok(plan(config, contacts, compatibility, singlePoint = onlyPoint != null))
+    }
+
+    /** Access, display and structural checks; null when everything is fine. */
+    private fun precondition(
+        config: TriggerConfiguration,
+        geometry: DisplayGeometry,
+        capability: InjectionCapability,
+        ignoreEnabledFlag: Boolean,
+        onlyPoint: TargetPointId?,
+    ): AppError? {
+        if (!config.enabled && !ignoreEnabledFlag) return AppError(ErrorCode.TRIGGER_DISABLED)
+        if (!geometry.isValid) return AppError(ErrorCode.DISPLAY_UNAVAILABLE)
+        if (!capability.available) return AppError(capability.reason ?: ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
+        val structural = TriggerValidator.validate(config)
+            .filterNot { it.code == ErrorCode.NAME_INVALID }
+            .filterNot { onlyPoint != null && it.code == ErrorCode.TRIGGER_NO_TARGETS }
+        structural.firstOrNull()?.let { return it }
+        if (onlyPoint != null && config.targetPoints.none { it.id == onlyPoint }) {
+            return AppError(ErrorCode.TRIGGER_NO_TARGETS, detail = "point ${onlyPoint.value} not in configuration")
+        }
+        return null
+    }
+
+    /** Resolves the wanted points to physical pixels; an off-screen point fails the whole plan. */
+    private fun contacts(
+        config: TriggerConfiguration,
+        geometry: DisplayGeometry,
+        onlyPoint: TargetPointId?,
+    ): AppResult<List<Contact>> {
         val contacts = ArrayList<Contact>()
         config.targetPoints.forEachIndexed { index, point ->
             val wanted = if (onlyPoint != null) point.id == onlyPoint else point.enabled
@@ -57,35 +89,33 @@ object TargetResolver {
                 delayBeforeMs = if (onlyPoint != null) 0L else point.delayBeforeMs,
             )
         }
-        if (contacts.isEmpty()) return AppResult.err(ErrorCode.TRIGGER_NO_TARGETS)
-        if (config.executionMode == ExecutionMode.MULTI_TOUCH && contacts.size > capability.maxSimultaneousContacts) {
-            return AppResult.err(
-                ErrorCode.LIMIT_EXCEEDED,
-                detail = "multi-touch supports ${capability.maxSimultaneousContacts} contacts",
-            )
-        }
-        return AppResult.ok(
-            if (onlyPoint != null) {
-                InjectionPlan(
-                    triggerId = config.id,
-                    mode = ExecutionMode.SEQUENTIAL,
-                    contacts = contacts,
-                    repeatCount = 1,
-                    repeatDelayMs = 0L,
-                    compatibility = compatibility,
-                    reactionDelayMs = 0L,
-                )
-            } else {
-                InjectionPlan(
-                    triggerId = config.id,
-                    mode = config.executionMode,
-                    contacts = contacts,
-                    repeatCount = config.repeatCount,
-                    repeatDelayMs = config.repeatDelayMs,
-                    compatibility = compatibility,
-                    reactionDelayMs = config.reactionDelayMs,
-                )
-            },
+        return if (contacts.isEmpty()) AppResult.err(ErrorCode.TRIGGER_NO_TARGETS) else AppResult.ok(contacts)
+    }
+
+    private fun plan(
+        config: TriggerConfiguration,
+        contacts: List<Contact>,
+        compatibility: DisplayCompatibility,
+        singlePoint: Boolean,
+    ): InjectionPlan = if (singlePoint) {
+        InjectionPlan(
+            triggerId = config.id,
+            mode = ExecutionMode.SEQUENTIAL,
+            contacts = contacts,
+            repeatCount = 1,
+            repeatDelayMs = 0L,
+            compatibility = compatibility,
+            reactionDelayMs = 0L,
+        )
+    } else {
+        InjectionPlan(
+            triggerId = config.id,
+            mode = config.executionMode,
+            contacts = contacts,
+            repeatCount = config.repeatCount,
+            repeatDelayMs = config.repeatDelayMs,
+            compatibility = compatibility,
+            reactionDelayMs = config.reactionDelayMs,
         )
     }
 }
