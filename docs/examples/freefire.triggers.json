@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "kind": "macroandroid.triggers",
+  "triggers": [
+    {
+      "id": "ff-fire-burst",
+      "name": "FF: Fire burst (3 taps)",
+      "enabled": false,
+      "packageName": "com.dts.freefireth",
+      "triggerArea": {
+        "x": 0.02,
+        "y": 0.60,
+        "width": 0.14,
+        "height": 0.28
+      },
+      "targetPoints": [
+        {
+          "id": "ff-fire-1",
+          "x": 0.885,
+          "y": 0.700,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "TAP",
+          "delayBeforeMs": 0,
+          "holdMs": 40,
+          "enabled": true
+        }
+      ],
+      "executionMode": "SEQUENTIAL",
+      "reactionDelayMs": 0,
+      "cooldownMs": 250,
+      "repeatCount": 3,
+      "repeatDelayMs": 60,
+      "authoredDisplay": {
+        "widthPx": 2400,
+        "heightPx": 1080,
+        "orientation": "LANDSCAPE"
+      },
+      "showIndicatorInGameplay": true
+    },
+    {
+      "id": "ff-jump-fire",
+      "name": "FF: Jump + fire (multi-touch)",
+      "enabled": false,
+      "packageName": "com.dts.freefireth",
+      "triggerArea": {
+        "x": 0.02,
+        "y": 0.30,
+        "width": 0.14,
+        "height": 0.26
+      },
+      "targetPoints": [
+        {
+          "id": "ff-jump",
+          "x": 0.935,
+          "y": 0.430,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "TAP",
+          "delayBeforeMs": 0,
+          "holdMs": 60,
+          "enabled": true
+        },
+        {
+          "id": "ff-fire-2",
+          "x": 0.885,
+          "y": 0.700,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "LONG_PRESS",
+          "delayBeforeMs": 0,
+          "holdMs": 350,
+          "enabled": true
+        }
+      ],
+      "executionMode": "MULTI_TOUCH",
+      "reactionDelayMs": 0,
+      "cooldownMs": 400,
+      "repeatCount": 1,
+      "repeatDelayMs": 100,
+      "authoredDisplay": {
+        "widthPx": 2400,
+        "heightPx": 1080,
+        "orientation": "LANDSCAPE"
+      },
+      "showIndicatorInGameplay": true
+    },
+    {
+      "id": "ff-crouch-fire-crouch",
+      "name": "FF: Crouch → fire → stand (sequential)",
+      "enabled": false,
+      "packageName": "com.dts.freefireth",
+      "triggerArea": {
+        "x": 0.18,
+        "y": 0.66,
+        "width": 0.12,
+        "height": 0.22
+      },
+      "targetPoints": [
+        {
+          "id": "ff-crouch-a",
+          "x": 0.935,
+          "y": 0.850,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "TAP",
+          "delayBeforeMs": 0,
+          "holdMs": 50,
+          "enabled": true
+        },
+        {
+          "id": "ff-fire-3",
+          "x": 0.885,
+          "y": 0.700,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "TAP",
+          "delayBeforeMs": 80,
+          "holdMs": 50,
+          "enabled": true
+        },
+        {
+          "id": "ff-crouch-b",
+          "x": 0.935,
+          "y": 0.850,
+          "coordinateSpace": "DISPLAY",
+          "actionType": "TAP",
+          "delayBeforeMs": 120,
+          "holdMs": 50,
+          "enabled": true
+        }
+      ],
+      "executionMode": "SEQUENTIAL",
+      "reactionDelayMs": 25,
+      "cooldownMs": 500,
+      "repeatCount": 1,
+      "repeatDelayMs": 100,
+      "authoredDisplay": {
+        "widthPx": 2400,
+        "heightPx": 1080,
+        "orientation": "LANDSCAPE"
+      },
+      "showIndicatorInGameplay": true
+    }
+  ]
+}
