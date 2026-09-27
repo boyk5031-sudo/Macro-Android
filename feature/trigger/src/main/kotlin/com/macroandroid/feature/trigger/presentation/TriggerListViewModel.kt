@@ -72,6 +72,8 @@ class TriggerListViewModel @Inject constructor(
 
     fun setIndicatorVisible(visible: Boolean) = viewModelScope.launch { prefs.setShowTriggerIndicator(visible) }
 
+    fun stopOverlayEdit() = viewModelScope.launch { runtime.stopOverlayEdit() }
+
     fun duplicate(id: TriggerId) = viewModelScope.launch {
         when (val r = repository.duplicate(id)) {
             is AppResult.Ok -> _events.tryEmit(TriggerListEvent.Duplicated(r.value.id))

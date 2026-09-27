@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -164,6 +165,7 @@ fun TriggerListRoute(
                 onDuplicate = viewModel::duplicate,
                 onDelete = { pendingDelete = it },
                 onIndicator = viewModel::setIndicatorVisible,
+                onStopEditing = viewModel::stopOverlayEdit,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -195,6 +197,7 @@ private fun TriggerList(
     onDuplicate: (TriggerId) -> Unit,
     onDelete: (TriggerId) -> Unit,
     onIndicator: (Boolean) -> Unit,
+    onStopEditing: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier.fillMaxSize().testTag(TriggerTestTags.LIST)) {
@@ -202,6 +205,22 @@ private fun TriggerList(
             state.access?.let { AccessChecklist(it, onOpenDisclosure, Modifier.padding(16.dp)) }
         }
         item { RuntimeBanner(state) }
+        state.runtime.editingTriggerId?.let { editingId ->
+            item {
+                val name = state.triggers.firstOrNull { it.id.value == editingId }?.config?.name.orEmpty()
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        stringResource(R.string.trg_editing_on_screen, name.ifBlank { stringResource(R.string.trg_unnamed) }),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = onStopEditing) { Text(stringResource(R.string.trg_stop_editing)) }
+                }
+            }
+        }
         item {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),

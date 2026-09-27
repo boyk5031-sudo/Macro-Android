@@ -3,6 +3,7 @@ package com.macroandroid.feature.trigger.presentation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.macroandroid.automation.port.AppLauncher
 import com.macroandroid.automation.trigger.AuthoredDisplay
 import com.macroandroid.automation.trigger.CoordinateConverter
 import com.macroandroid.automation.trigger.CoordinateSpace
@@ -51,6 +52,12 @@ sealed interface TestPhase {
     data object RunningInGame : TestPhase
 }
 
+/** What a test run executes: the whole configuration or one target point (§26). */
+sealed interface TestScope {
+    data object Whole : TestScope
+    data class SinglePoint(val id: TargetPointId) : TestScope
+}
+
 data class TriggerEditorUiState(
     val config: TriggerConfiguration? = null,
     val isNew: Boolean = true,
@@ -73,13 +80,24 @@ data class TriggerEditorUiState(
     val canTest: Boolean
         get() = config != null && errors.none { it.code != ErrorCode.NAME_INVALID } &&
             access?.ready == true && testPhase == TestPhase.Idle
+    /** A single point can be tested even while the configuration as a whole has no enabled target yet. */
+    val canTestPoint: Boolean
+        get() = config != null && access?.ready == true && testPhase == TestPhase.Idle &&
+            errors.none { it.code != ErrorCode.NAME_INVALID && it.code != ErrorCode.TRIGGER_NO_TARGETS }
     val canAddPoint: Boolean get() = (config?.targetPoints?.size ?: 0) < TriggerLimits.MAX_TARGETS
+
+    /** On-screen edit works on the saved configuration; unsaved changes would be silently lost otherwise. */
+    val canEditOnScreen: Boolean
+        get() = config != null && !isNew && !dirty && access?.ready == true && testPhase == TestPhase.Idle
 }
 
 sealed interface TriggerEditorEvent {
     data class Saved(val id: TriggerId) : TriggerEditorEvent
     data class Error(val error: AppError) : TriggerEditorEvent
     data object TestSucceeded : TriggerEditorEvent
+
+    /** Edit mode was handed to the runtime; the screen should leave (the overlay appears over the game). */
+    data class EditOnScreenStarted(val packageName: String?) : TriggerEditorEvent
 }
 
 /**
@@ -93,6 +111,7 @@ class TriggerEditorViewModel @Inject constructor(
     private val repository: TriggerRepository,
     private val runtime: TriggerRuntimeContract,
     private val launcherApps: LauncherApps,
+    private val appLauncher: AppLauncher,
 ) : ViewModel() {
     private val idArg: String? = savedState[ARG_TRIGGER_ID]
 
@@ -135,6 +154,7 @@ class TriggerEditorViewModel @Inject constructor(
     fun setPackage(packageName: String?) = edit { it.copy(packageName = packageName?.trim()?.ifEmpty { null }) }
     fun setEnabled(enabled: Boolean) = edit { it.copy(enabled = enabled) }
     fun setMode(mode: ExecutionMode) = edit { it.copy(executionMode = mode) }
+    fun setReactionDelay(ms: Long) = edit { it.copy(reactionDelayMs = ms.coerceIn(0, TriggerLimits.MAX_REACTION_DELAY_MS)) }
     fun setCooldown(ms: Long) =
         edit { it.copy(cooldownMs = ms.coerceIn(TriggerLimits.MIN_COOLDOWN_MS, TriggerLimits.MAX_COOLDOWN_MS)) }
     fun setRepeatCount(count: Int) = edit { it.copy(repeatCount = count.coerceIn(1, TriggerLimits.MAX_REPEAT)) }
@@ -264,6 +284,37 @@ class TriggerEditorViewModel @Inject constructor(
     /** Gives the user [IN_GAME_COUNTDOWN_S] seconds to switch to the game, then injects the configured taps. */
     fun testInGame() = startTest(TestPhase.RunningInGame, countdownSeconds = IN_GAME_COUNTDOWN_S)
 
+    /** Taps ONE target under the scrim – once, immediately, ignoring its enabled flag, reaction delay and repeats. */
+    fun testPoint(id: TargetPointId) = startTest(TestPhase.RunningHere, countdownSeconds = 0, scope = TestScope.SinglePoint(id))
+
+    /**
+     * Hands the saved configuration to the runtime's on-screen editor and, for a bound configuration, brings the
+     * game to the front so the editor appears over it. Unbound configurations: the editor appears over whatever
+     * app the user opens next.
+     */
+    fun editOnScreen() {
+        val state = _state.value
+        val config = state.config ?: return
+        if (!state.canEditOnScreen) return
+        viewModelScope.launch {
+            when (val r = runtime.startOverlayEdit(config.id.value)) {
+                is AppResult.Err -> _events.tryEmit(TriggerEditorEvent.Error(r.error))
+                is AppResult.Ok -> {
+                    val pkg = config.packageName
+                    if (pkg != null) {
+                        val launched = appLauncher.launch(pkg)
+                        if (launched is AppResult.Err) {
+                            runtime.stopOverlayEdit()
+                            _events.tryEmit(TriggerEditorEvent.Error(launched.error))
+                            return@launch
+                        }
+                    }
+                    _events.tryEmit(TriggerEditorEvent.EditOnScreenStarted(pkg))
+                }
+            }
+        }
+    }
+
     fun cancelTest() {
         testJob?.cancel()
         testJob = null
@@ -273,9 +324,10 @@ class TriggerEditorViewModel @Inject constructor(
     /** Called by the test scrim for every pointer-down it receives. */
     fun onScrimTap(x: Float, y: Float) = _state.update { it.copy(receivedTaps = it.receivedTaps + (x to y)) }
 
-    private fun startTest(running: TestPhase, countdownSeconds: Int) {
+    private fun startTest(running: TestPhase, countdownSeconds: Int, scope: TestScope = TestScope.Whole) {
         val config = _state.value.config ?: return
-        if (!_state.value.canTest) return
+        val allowed = if (scope is TestScope.SinglePoint) _state.value.canTestPoint else _state.value.canTest
+        if (!allowed) return
         testJob?.cancel()
         testJob = viewModelScope.launch {
             try {
@@ -285,7 +337,12 @@ class TriggerEditorViewModel @Inject constructor(
                 }
                 _state.update { it.copy(testPhase = running, receivedTaps = emptyList()) }
                 if (running == TestPhase.RunningHere) delay(SCRIM_SETTLE_MS)
-                when (val r = runtime.test(TriggerJson.encodeConfiguration(config))) {
+                val json = TriggerJson.encodeConfiguration(config)
+                val result = when (scope) {
+                    TestScope.Whole -> runtime.test(json)
+                    is TestScope.SinglePoint -> runtime.testTarget(json, scope.id.value)
+                }
+                when (val r = result) {
                     is AppResult.Ok -> _events.tryEmit(TriggerEditorEvent.TestSucceeded)
                     is AppResult.Err -> _events.tryEmit(TriggerEditorEvent.Error(r.error))
                 }

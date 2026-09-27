@@ -24,3 +24,4 @@ keystore.properties
 *.hprof
 /reports/
 /dist/
+__pycache__/

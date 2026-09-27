@@ -29,6 +29,24 @@ sealed interface TouchOutcome {
 enum class ExecutionReason { TRIGGER, TEST }
 
 /**
+ * Explicit trigger state (§11). Transitions: IDLE ─DOWN inside─▶ EXECUTING (reaction delay, targets, repeats)
+ * ─done─▶ WAITING_FOR_RELEASE or COOLDOWN ─UP/CANCEL + cooldown elapsed─▶ IDLE. A DOWN in any state but IDLE is
+ * rejected, which is what guarantees one physical gesture never activates twice.
+ */
+enum class TriggerState {
+    IDLE,
+
+    /** Reaction delay or target injection in progress. */
+    EXECUTING,
+
+    /** Execution finished but the activating finger is still down (or the CANCEL is still pending). */
+    WAITING_FOR_RELEASE,
+
+    /** Released, but the cooldown since the last activation has not elapsed. */
+    COOLDOWN,
+}
+
+/**
  * Trigger Detection → Trigger Controller → Target Point Resolver → Coordinate Converter → Input Injection Adapter.
  *
  * One instance per armed configuration. Pure Kotlin: the Android layer feeds [onTouch] from the overlay view and
@@ -48,6 +66,13 @@ class TriggerController(
 
     val isExecuting: Boolean get() = job?.isActive == true
 
+    fun state(nowMs: Long): TriggerState = when {
+        isExecuting -> TriggerState.EXECUTING
+        gate.isHeld -> TriggerState.WAITING_FOR_RELEASE
+        gate.inCooldown(nowMs) -> TriggerState.COOLDOWN
+        else -> TriggerState.IDLE
+    }
+
     fun onTouch(touch: TriggerTouch): TouchOutcome {
         when (touch.kind) {
             TouchKind.UP, TouchKind.CANCEL -> {
@@ -56,6 +81,7 @@ class TriggerController(
             }
             TouchKind.DOWN -> Unit
         }
+        // MOVE events never reach here: the overlay forwards DOWN/UP/CANCEL only (§11).
         if (!TriggerHitTester.hit(config.triggerArea, geometry, touch.xPx, touch.yPx)) return TouchOutcome.Ignored
         when (val decision = gate.onDown(touch.atMs)) {
             is GateDecision.Reject -> return TouchOutcome.Rejected(
@@ -99,11 +125,17 @@ class TriggerController(
                 append("\nTouch: ").append(touch.xPx.toInt()).append(',').append(touch.yPx.toInt())
                 append("\nTrigger bounds: ").append(bounds.left).append(',').append(bounds.top).append(',')
                 append(bounds.width).append(',').append(bounds.height)
+                append("\nReaction delay: ").append(plan.reactionDelayMs).append(" ms")
                 append("\nTarget count: ").append(plan.contacts.size)
                 plan.contacts.forEach { c ->
                     append("\nTarget ").append(c.index).append(": ").append(c.x.toInt()).append(',').append(c.y.toInt())
+                    append(" delay ").append(c.delayBeforeMs).append(" ms hold ").append(c.holdMs).append(" ms")
                 }
                 append("\nExecution mode: ").append(plan.mode)
+                append("\nCooldown: ").append(config.cooldownMs).append(" ms")
+                append("\nRepeat: ").append(config.repeatMode).append(" ×").append(plan.repeatCount)
+                append(" every ").append(plan.repeatDelayMs).append(" ms")
+                append("\nInjection: ").append(adapter.capability().let { if (it.available) "available" else "${it.reason}" })
                 if (plan.compatibility != DisplayCompatibility.EXACT) append("\nDisplay: ").append(plan.compatibility)
             },
         )
@@ -125,6 +157,7 @@ object TriggerPlanExecutor {
         reason: ExecutionReason,
     ): AppResult<Unit> {
         if (plan.isEmpty) return AppResult.err(ErrorCode.TRIGGER_NO_TARGETS)
+        if (plan.reactionDelayMs > 0) delay(plan.reactionDelayMs)
         repeat(plan.repeatCount) { run ->
             if (run > 0 && plan.repeatDelayMs > 0) delay(plan.repeatDelayMs)
             val result = when (plan.mode) {

@@ -88,6 +88,17 @@
     <string name="trg_mode_sequential_help">Targets are tapped one after another with the delay set on each point.</string>
     <string name="trg_mode_multitouch_help">All enabled targets go down together as one multi-finger gesture (genuine simultaneous contacts, max 10). Per-point delays are ignored.</string>
     <string name="trg_cooldown_ms">Cooldown ms</string>
+    <string name="trg_reaction_delay">Trigger reaction delay</string>
+    <string name="trg_reaction_delay_ms">Reaction ms</string>
+    <string name="trg_reaction_delay_help">Wait this long after your press before the first target is tapped. 0 reacts immediately.</string>
+    <string name="trg_ms_value">%1$d ms</string>
+    <string name="trg_test_point">Test this target</string>
+    <string name="trg_edit_on_screen">Adjust over game</string>
+    <string name="trg_edit_on_screen_help">Shows the area and targets full-screen over the game so you can drag them into place. Tap Done there to save.</string>
+    <string name="trg_edit_on_screen_save_first">Save the trigger first to adjust it over the game.</string>
+    <string name="trg_edit_on_screen_needs_access">Grant the accessibility access above to adjust over the game.</string>
+    <string name="trg_editing_on_screen">Editing “%1$s” on screen. Switch to the game to continue, or stop here.</string>
+    <string name="trg_stop_editing">Stop editing</string>
     <string name="trg_repeat_count">Repeat ×</string>
     <string name="trg_repeat_delay_ms">Repeat gap ms</string>
     <string name="trg_indicator_override">Outline during gameplay</string>

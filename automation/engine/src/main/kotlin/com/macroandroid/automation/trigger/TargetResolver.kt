@@ -12,11 +12,17 @@ import com.macroandroid.core.common.error.ErrorCode
  */
 object TargetResolver {
 
+    /**
+     * @param ignoreEnabledFlag editor test runs: execute even when the configuration is switched off.
+     * @param onlyPoint editor "test this point": a plan with just that point (its enabled flag ignored), run once,
+     *   sequentially, without reaction delay or the point's own pre-delay. All other checks still apply.
+     */
     fun resolve(
         config: TriggerConfiguration,
         geometry: DisplayGeometry,
         capability: InjectionCapability,
         ignoreEnabledFlag: Boolean = false,
+        onlyPoint: TargetPointId? = null,
     ): AppResult<InjectionPlan> {
         if (!config.enabled && !ignoreEnabledFlag) return AppResult.err(ErrorCode.TRIGGER_DISABLED)
         if (!geometry.isValid) return AppResult.err(ErrorCode.DISPLAY_UNAVAILABLE)
@@ -24,14 +30,19 @@ object TargetResolver {
             return AppResult.err(capability.reason ?: ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
         }
         val structural = TriggerValidator.validate(config).filterNot { it.code == ErrorCode.NAME_INVALID }
+            .filterNot { onlyPoint != null && it.code == ErrorCode.TRIGGER_NO_TARGETS }
         structural.firstOrNull()?.let { return AppResult.err(it) }
         val compatibility = CoordinateConverter.compatibility(config.authoredDisplay, geometry)
         if (compatibility == DisplayCompatibility.ORIENTATION_MISMATCH) {
             return AppResult.err(ErrorCode.DISPLAY_ORIENTATION_MISMATCH)
         }
+        if (onlyPoint != null && config.targetPoints.none { it.id == onlyPoint }) {
+            return AppResult.err(ErrorCode.TRIGGER_NO_TARGETS, detail = "point ${onlyPoint.value} not in configuration")
+        }
         val contacts = ArrayList<Contact>()
         config.targetPoints.forEachIndexed { index, point ->
-            if (!point.enabled) return@forEachIndexed
+            val wanted = if (onlyPoint != null) point.id == onlyPoint else point.enabled
+            if (!wanted) return@forEachIndexed
             val px = CoordinateConverter.pointToDisplay(point, config.triggerArea, geometry)
             if (!CoordinateConverter.isOnDisplay(px, geometry)) {
                 return AppResult.err(
@@ -43,7 +54,7 @@ object TargetResolver {
                 x = px.x,
                 y = px.y,
                 holdMs = point.effectiveHoldMs,
-                delayBeforeMs = point.delayBeforeMs,
+                delayBeforeMs = if (onlyPoint != null) 0L else point.delayBeforeMs,
             )
         }
         if (contacts.isEmpty()) return AppResult.err(ErrorCode.TRIGGER_NO_TARGETS)
@@ -54,14 +65,27 @@ object TargetResolver {
             )
         }
         return AppResult.ok(
-            InjectionPlan(
-                triggerId = config.id,
-                mode = config.executionMode,
-                contacts = contacts,
-                repeatCount = config.repeatCount,
-                repeatDelayMs = config.repeatDelayMs,
-                compatibility = compatibility,
-            ),
+            if (onlyPoint != null) {
+                InjectionPlan(
+                    triggerId = config.id,
+                    mode = ExecutionMode.SEQUENTIAL,
+                    contacts = contacts,
+                    repeatCount = 1,
+                    repeatDelayMs = 0L,
+                    compatibility = compatibility,
+                    reactionDelayMs = 0L,
+                )
+            } else {
+                InjectionPlan(
+                    triggerId = config.id,
+                    mode = config.executionMode,
+                    contacts = contacts,
+                    repeatCount = config.repeatCount,
+                    repeatDelayMs = config.repeatDelayMs,
+                    compatibility = compatibility,
+                    reactionDelayMs = config.reactionDelayMs,
+                )
+            },
         )
     }
 }

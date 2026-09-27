@@ -50,6 +50,8 @@ data class TriggerRuntimeStatus(
     val lastActivationAtMillis: Long? = null,
     val activationCount: Long = 0,
     val executing: Boolean = false,
+    /** Id being edited on screen (full-display edit overlay), or null. */
+    val editingTriggerId: String? = null,
 )
 
 /**
@@ -72,4 +74,15 @@ interface TriggerRuntimeContract {
      * tested) once, without the overlay. Uses the exact same resolver and injection path as a real activation.
      */
     suspend fun test(configurationJson: String): AppResult<Unit>
+
+    /** Taps ONE target point of the given configuration once (no reaction delay, no repeats). */
+    suspend fun testTarget(configurationJson: String, pointId: String): AppResult<Unit>
+
+    /**
+     * Enters on-screen edit mode for a saved configuration: the runtime shows a full-display editor over the
+     * bound app (or over any other app for unbound configurations) until the user taps Done or Cancel, or
+     * [stopOverlayEdit] is called. Done writes the edited area/points back to the repository.
+     */
+    suspend fun startOverlayEdit(triggerId: String): AppResult<Unit>
+    suspend fun stopOverlayEdit()
 }

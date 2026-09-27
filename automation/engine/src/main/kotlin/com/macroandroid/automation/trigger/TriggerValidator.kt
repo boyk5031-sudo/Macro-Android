@@ -38,6 +38,7 @@ object TriggerValidator {
 
     private fun timingValid(config: TriggerConfiguration): Boolean =
         config.cooldownMs in TriggerLimits.MIN_COOLDOWN_MS..TriggerLimits.MAX_COOLDOWN_MS &&
+            config.reactionDelayMs in 0..TriggerLimits.MAX_REACTION_DELAY_MS &&
             config.repeatCount in 1..TriggerLimits.MAX_REPEAT &&
             config.repeatDelayMs in 0..TriggerLimits.MAX_DELAY_MS
 

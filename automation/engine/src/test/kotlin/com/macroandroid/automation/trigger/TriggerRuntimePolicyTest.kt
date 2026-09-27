@@ -18,7 +18,46 @@ class TriggerRuntimePolicyTest {
         interactive: Boolean = true,
         geometry: com.macroandroid.core.common.display.DisplayGeometry? = PORTRAIT,
         configs: List<TriggerConfiguration> = listOf(game, manual),
-    ) = RuntimeInput(configs, foreground, "com.macroandroid", armed?.let(::TriggerId), access, interactive, geometry)
+        editing: String? = null,
+    ) = RuntimeInput(
+        configs,
+        foreground,
+        "com.macroandroid",
+        armed?.let(::TriggerId),
+        access,
+        interactive,
+        geometry,
+        editingId = editing?.let(::TriggerId),
+    )
+
+    @Test
+    fun `edit mode replaces gameplay overlays and follows the package binding`() {
+        val editing = TriggerRuntimePolicy.decide(input(editing = "game"))
+        assertThat(editing.editing?.id?.value).isEqualTo("game")
+        assertThat(editing.visible).isEmpty()
+        assertThat(editing.blockedReason).isNull()
+        // Bound configuration over another app: nothing (neither editor nor gameplay overlay).
+        assertThat(TriggerRuntimePolicy.decide(input(foreground = "com.other", editing = "game"))).isEqualTo(RuntimeDecision.IDLE)
+        // Unbound configuration can be edited over any app but ours.
+        assertThat(TriggerRuntimePolicy.decide(input(foreground = "com.other", editing = "manual")).editing?.id?.value)
+            .isEqualTo("manual")
+        assertThat(TriggerRuntimePolicy.decide(input(foreground = "com.macroandroid", editing = "manual")))
+            .isEqualTo(RuntimeDecision.IDLE)
+    }
+
+    @Test
+    fun `edit mode obeys access, screen, display and orientation rules and notices deletion`() {
+        assertThat(TriggerRuntimePolicy.decide(input(editing = "game", access = false)).blockedReason)
+            .isEqualTo(ErrorCode.GESTURE_DISPATCH_UNAVAILABLE)
+        assertThat(TriggerRuntimePolicy.decide(input(editing = "game", interactive = false)).blockedReason)
+            .isEqualTo(ErrorCode.PRECONDITION_SCREEN_OFF)
+        assertThat(TriggerRuntimePolicy.decide(input(editing = "game", geometry = null)).blockedReason)
+            .isEqualTo(ErrorCode.DISPLAY_UNAVAILABLE)
+        assertThat(TriggerRuntimePolicy.decide(input(editing = "game", geometry = LANDSCAPE)).blockedReason)
+            .isEqualTo(ErrorCode.DISPLAY_ORIENTATION_MISMATCH)
+        assertThat(TriggerRuntimePolicy.decide(input(editing = "game", configs = listOf(manual))).blockedReason)
+            .isEqualTo(ErrorCode.TRIGGER_NOT_FOUND)
+    }
 
     @Test
     fun `game start shows its trigger and game close hides it`() {

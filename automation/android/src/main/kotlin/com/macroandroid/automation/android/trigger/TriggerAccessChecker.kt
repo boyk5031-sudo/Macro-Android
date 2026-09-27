@@ -14,8 +14,9 @@ import javax.inject.Singleton
 
 /**
  * Permission/access verification layer for Trigger Areas (§9). Nothing here is cached beyond the live flows:
- * consent (for the current disclosure version) comes from DataStore, the Settings switch from Secure settings, connection + gesture capability from
- * the bound service. If any of them flips, [status] emits and the runtime tears the overlay down.
+ * consent (for the current disclosure version) comes from DataStore, the Settings switch from Secure settings,
+ * connection + gesture capability from the bound service. If any of them flips, [status] emits and the runtime
+ * tears the overlay down.
  */
 @Singleton
 class TriggerAccessChecker @Inject constructor(

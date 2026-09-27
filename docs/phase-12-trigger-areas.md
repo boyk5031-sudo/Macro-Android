@@ -89,8 +89,18 @@ only while a service is bound; otherwise `GESTURE_DISPATCH_UNAVAILABLE`.
   t = 0. Android delivers these as genuine simultaneous pointers (pointer ids 0…n-1) — this is the only mode we
   label "simultaneous"; capped at `GestureDescription.getMaxStrokeCount()` = 10. Per-target delays are ignored
   and the editor says so.
-* `repeatCount` (1–10) with `repeatDelayMs` re-runs the whole plan; "hold to repeat" is **not offered** because
+* **Reaction delay** (`reactionDelayMs`, 0–5000, presets 0/10/25/50/100/150/200/500, any value typeable) is a
+  real `delay()` between the activating DOWN and the first contact; during it the trigger is `EXECUTING` and
+  `disarm()` cancels it without injecting anything.
+* **Hold** is genuine: each `StrokeDescription` has the point's `holdMs` as its duration (press → hold → release
+  is one stroke; 10–5000 ms). Nothing is faked with repeated taps.
+* **Repeat mode** is `ONCE` or `FIXED_COUNT` (`repeatCount` 1–20 with `repeatDelayMs` as the interval); it is
+  derived from `repeatCount` so older documents stay valid. "Repeat while held" is **not offered** because
   `dispatchGesture` cancels the user's own touch (see next point), so a continuous hold cannot be observed.
+* **Own-window collision**: while a plan executes, the gameplay overlay window is flagged `FLAG_NOT_TOUCHABLE`
+  (`TriggerOverlayController.setTouchable`) so an injected contact whose target lies *inside* the trigger area
+  reaches the game instead of our own window; the flag is cleared when the plan finishes. The edit-mode window
+  does the same for its TEST button.
 * Consequence of the platform: dispatching a gesture cancels the touch currently on the overlay
   (`ACTION_CANCEL`). The controller treats CANCEL like UP (release → idle); the gate makes sure one DOWN
   activates **at most once** regardless of subsequent MOVE/CANCEL events.
@@ -131,9 +141,25 @@ and asks the pure `TriggerRuntimePolicy` which configs must be visible:
   on orientation mismatch;
 * process recreation → the system rebinds the service, `onServiceConnected` restarts the runtime from Room.
 
-Activation state machine (`TriggerActivationGate` + `TriggerController`): DOWN inside → validate (enabled,
-targets, coordinates, access, capability) → *Activate* once → UP/CANCEL → idle → next DOWN allowed after
-`cooldownMs`. Rejections carry a reason code and are logged (debug builds) but never crash.
+Activation state machine (`TriggerActivationGate` + `TriggerController`, explicit `TriggerState`):
+`IDLE` ─DOWN inside─▶ `EXECUTING` (reaction delay → targets → repeats) ─done─▶ `WAITING_FOR_RELEASE` (finger
+still down) ─UP/CANCEL─▶ `COOLDOWN` ─`cooldownMs` elapsed─▶ `IDLE`. A DOWN in any state but `IDLE` is rejected
+(`TRIGGER_BUSY` / `TRIGGER_COOLDOWN`), which is what guarantees one physical gesture never activates twice. MOVE
+events never reach the controller (the overlay forwards DOWN/UP/CANCEL only). Every validation (enabled, targets,
+coordinates, access, capability) runs again at activation time. Rejections carry a reason code and are logged
+(debug builds) but never crash.
+
+**On-screen edit mode** (spec §13 "Edit Mode"): *Adjust over game* in the editor (saved configurations only)
+calls `TriggerRuntimeContract.startOverlayEdit(id)`, launches the bound game (existing `AppLauncher` port) and the
+runtime shows one full-display `TYPE_ACCESSIBILITY_OVERLAY` window (`TriggerEditOverlayView`) instead of any
+gameplay overlay: drag the area, drag its bottom-right corner to resize, drag numbered markers, tap empty space
+or *Add* to add a point, *On/Off* / *Delete* for the selected point, *Test* (window made untouchable during
+injection), *Cancel*, *Done* (writes area/points back through `TriggerRepository.save`; refused saves, e.g. no
+enabled target, keep the editor open). All drag maths is the pure `TriggerEditSession` (engine, unit-tested);
+the view only draws. The editor obeys the same policy as gameplay (never over our own app, needs access, screen
+on, display measurable, matching orientation; bound configs only over their package) and pauses — keeping the
+unsaved session — when those conditions lapse; deleting the configuration ends the session. Numeric X/Y editing
+stays in the in-app editor.
 
 Indicator: the zone outline is drawn when the global setting *Show trigger area outline in games* is on, unless
 the configuration overrides it (Follow setting / Show / Hide). A hidden zone still receives taps.
@@ -149,7 +175,7 @@ the configuration overrides it (Follow setting / Show / Hide). A hidden zone sti
   "authoredDisplay": { "widthPx": 1080, "heightPx": 2400, "orientation": "PORTRAIT" },
   "targetPoints": [ { "id": "uuid", "x": 0.37, "y": 0.125, "coordinateSpace": "DISPLAY",
                       "actionType": "TAP" | "LONG_PRESS", "delayBeforeMs": 60, "holdMs": null, "enabled": true } ],
-  "executionMode": "SEQUENTIAL" | "MULTI_TOUCH", "cooldownMs": 300,
+  "executionMode": "SEQUENTIAL" | "MULTI_TOUCH", "reactionDelayMs": 0, "cooldownMs": 300,
   "repeatCount": 1, "repeatDelayMs": 100, "showIndicatorInGameplay": null
 } ] }
 ```
@@ -185,17 +211,26 @@ triggers per document, 1 MiB.
 ## 9. Tests
 
 JVM (`automation:engine`, no Android): `CoordinateConverterTest`, `TargetResolverTest`, `TriggerActivationGateTest`,
-`TriggerControllerTest`, `TriggerRuntimePolicyTest`, `TriggerJsonTest` — 44 cases covering: touch inside /
-outside, all enabled points executed, trigger location never alters targets, order, sequential delays, genuine
-multi-touch stroke count, cooldown, disabled area / disabled point / empty list, invalid & off-screen
-coordinates, scaling between resolutions, orientation mismatch, relative vs display space, JSON round trip,
-schema-too-new, activation policy (bound / armed / own app / access missing / screen off), no stuck contacts
-(`cancelAll` on disarm).
+`TriggerControllerTest`, `TriggerRuntimePolicyTest`, `TriggerJsonTest`, `TriggerEditSessionTest` — 57 cases
+covering: touch inside / outside, all enabled points executed, trigger location never alters targets, order,
+sequential delays, reaction delay (nothing injected before it elapses; disarm during it injects nothing), genuine
+multi-touch stroke count, cooldown, the explicit state machine (IDLE → EXECUTING → WAITING_FOR_RELEASE →
+COOLDOWN → IDLE with rejections in each non-idle state), single-point test plans (only that point, once, no
+reaction delay / pre-delay / repeats, allowed while the configuration has no enabled target), repeat mode
+derivation, disabled area / disabled point / empty list, invalid & off-screen coordinates, scaling between
+resolutions, orientation mismatch, relative vs display space, JSON round trip, schema-too-new, activation policy
+(bound / armed / own app / access missing / screen off), edit-mode policy (replaces gameplay overlays, follows
+package binding, same access/screen/display/orientation rules, deletion noticed), on-screen edit session (hit
+priority, area move leaves display points and carries relative points, resize clamping, point drag clamping,
+tap-vs-drag slop, add/toggle/delete with cap, cancel and geometry re-mapping), no stuck contacts (`cancelAll`
+on disarm).
 
 ViewModel tests (`feature:trigger`, Robolectric-free): `TriggerEditorViewModelTest` (defaults, load, not-found,
 numeric vs drag edits, relative/display point behaviour on area move, add/move/reorder/disable/delete/cap,
 clamping & validation, save success/failure, test refused without access then runs, in-game countdown cancel,
-rotation compatibility) and `TriggerListViewModelTest` (state combination, disarm on disable/delete, arm error,
+reaction-delay clamping, per-point test path even with no enabled targets, on-screen edit requiring a saved
+configuration then starting the runtime editor and launching the bound game, rotation compatibility) and
+`TriggerListViewModelTest` (state combination, disarm on disable/delete, arm error,
 export→import round trip, corrupt import, indicator preference).
 
 Persistence: `Migration(1, 2)` runs under Room's schema export; the repository test path is exercised through
@@ -220,7 +255,13 @@ manual acceptance flow in §11.
 * Side-loaded builds on Android 13+ must first allow "restricted settings" for the accessibility switch.
 * Foldables / secondary displays: geometry is read for the default display; a trigger authored on the inner
   panel is hidden on the outer panel (`ASPECT_DIFFERS` warns, `ORIENTATION_MISMATCH` hides).
-* Rooted or emulated input is neither required nor used.
+* Rooted or emulated input is neither required nor used. **Shizuku, ADB, USB/wireless debugging and shell
+  `input` are not used and not required** — the only injection path is `AccessibilityService.dispatchGesture`.
+* No `SYSTEM_ALERT_WINDOW`, no foreground service and no notification permission are needed for triggers: the
+  overlay is `TYPE_ACCESSIBILITY_OVERLAY` owned by the bound service, whose lifecycle the system manages.
+* An injected contact that lands inside the trigger area is delivered to the game only because the overlay is
+  made untouchable during execution; if the system refuses the `updateViewLayout` (logged), such a target would
+  be swallowed by the overlay — place targets outside the zone if you see that in logs.
 
 ---
 
@@ -232,6 +273,10 @@ manual acceptance flow in §11.
    three times to add targets → *Test here* shows three rings at the targets → *Save*.
 3. Launch the game → the zone appears (outline visible if the setting is on) → tap inside → three taps hit the
    game → release → tap again after the cooldown → works again; tapping outside the zone does nothing.
+   With a reaction delay of 200 ms the first tap lands visibly later; the per-point ▶ button in the editor taps
+   just that point.
+3b. Editor → *Adjust over game* → the game comes to the front with the full-screen editor → drag the zone and a
+   marker → *Test* → *Done* → back in the app the editor shows the new positions.
 4. Rotate the device → the zone disappears (orientation mismatch) and returns when rotated back.
 5. Disable the trigger in the list → the zone disappears immediately; withdraw consent → same, and the checklist
    explains what is missing.

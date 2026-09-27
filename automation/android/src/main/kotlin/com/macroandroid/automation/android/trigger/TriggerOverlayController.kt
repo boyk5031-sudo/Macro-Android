@@ -8,6 +8,7 @@ import android.view.WindowManager
 import androidx.core.content.getSystemService
 import com.macroandroid.automation.trigger.TriggerId
 import com.macroandroid.automation.trigger.TriggerTouch
+import com.macroandroid.core.common.display.DisplayGeometry
 import com.macroandroid.core.common.display.DisplayRect
 import com.macroandroid.core.common.logging.Logger
 import javax.inject.Inject
@@ -23,10 +24,14 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
 
     private class Entry(val view: TriggerOverlayView, val params: WindowManager.LayoutParams, var bounds: DisplayRect)
 
+    private class EditorEntry(val view: TriggerEditOverlayView, val params: WindowManager.LayoutParams)
+
     private val entries = LinkedHashMap<TriggerId, Entry>()
+    private var editor: EditorEntry? = null
     private var windowManager: WindowManager? = null
 
     val visibleIds: Set<TriggerId> get() = entries.keys.toSet()
+    val editorView: TriggerEditOverlayView? get() = editor?.view
 
     /** Shows or repositions the overlay for [id]. Returns false when the system refused the window. */
     fun show(
@@ -73,6 +78,63 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
         entries[id]?.view?.flashActivated()
     }
 
+    /**
+     * While targets are being injected the window must not swallow the injected contacts: a target that lies
+     * inside its own trigger area would otherwise tap the overlay instead of the game.
+     */
+    fun setTouchable(id: TriggerId, touchable: Boolean) {
+        val entry = entries[id] ?: return
+        if (entry.params.setNotTouchable(!touchable)) {
+            runCatching { windowManager?.updateViewLayout(entry.view, entry.params) }
+                .onFailure { logger.w(TAG, "updateViewLayout(touchable=$touchable) failed", it) }
+        }
+    }
+
+    /** Shows the full-display edit-mode window; hides any gameplay overlays first so the two never overlap. */
+    fun showEditor(service: AccessibilityService, view: TriggerEditOverlayView, geometry: DisplayGeometry): Boolean {
+        val wm = windowManager ?: service.getSystemService<WindowManager>()?.also { windowManager = it } ?: return false
+        hideEditor()
+        entries.keys.toList().forEach(::hide)
+        val params = newParams().applyBounds(DisplayRect(0, 0, geometry.widthPx, geometry.heightPx))
+        return try {
+            wm.addView(view, params)
+            editor = EditorEntry(view, params)
+            true
+        } catch (e: WindowManager.BadTokenException) {
+            logger.w(TAG, "editor addView refused", e)
+            false
+        } catch (e: IllegalStateException) {
+            logger.w(TAG, "editor addView failed", e)
+            false
+        }
+    }
+
+    fun setEditorTouchable(touchable: Boolean) {
+        val entry = editor ?: return
+        if (entry.params.setNotTouchable(!touchable)) {
+            runCatching { windowManager?.updateViewLayout(entry.view, entry.params) }
+                .onFailure { logger.w(TAG, "editor updateViewLayout failed", it) }
+        }
+    }
+
+    fun hideEditor() {
+        val entry = editor ?: return
+        editor = null
+        runCatching { windowManager?.removeViewImmediate(entry.view) }
+            .onFailure { logger.w(TAG, "editor removeView failed", it) }
+    }
+
+    /** Returns true when the flag actually changed. */
+    private fun WindowManager.LayoutParams.setNotTouchable(notTouchable: Boolean): Boolean {
+        val before = flags
+        flags = if (notTouchable) {
+            flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        } else {
+            flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        }
+        return flags != before
+    }
+
     fun hide(id: TriggerId) {
         val entry = entries.remove(id) ?: return
         runCatching { windowManager?.removeViewImmediate(entry.view) }
@@ -81,6 +143,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
 
     fun hideAll() {
         entries.keys.toList().forEach(::hide)
+        hideEditor()
         windowManager = null
     }
 

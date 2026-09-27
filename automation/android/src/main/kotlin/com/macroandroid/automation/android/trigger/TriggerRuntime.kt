@@ -1,22 +1,27 @@
 package com.macroandroid.automation.android.trigger
 
+import android.accessibilityservice.AccessibilityService
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.PowerManager
+import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import com.macroandroid.automation.android.accessibility.AccessibilityServiceRegistry
 import com.macroandroid.automation.trigger.CoordinateConverter
 import com.macroandroid.automation.trigger.ExecutionReason
+import com.macroandroid.automation.trigger.InjectionPlan
 import com.macroandroid.automation.trigger.RuntimeDecision
 import com.macroandroid.automation.trigger.RuntimeInput
+import com.macroandroid.automation.trigger.TargetPointId
 import com.macroandroid.automation.trigger.TargetResolver
 import com.macroandroid.automation.trigger.TouchOutcome
 import com.macroandroid.automation.trigger.TriggerConfiguration
 import com.macroandroid.automation.trigger.TriggerController
+import com.macroandroid.automation.trigger.TriggerEditSession
 import com.macroandroid.automation.trigger.TriggerId
 import com.macroandroid.automation.trigger.TriggerJson
 import com.macroandroid.automation.trigger.TriggerPlanExecutor
@@ -85,6 +90,9 @@ class TriggerRuntime @Inject constructor(
     override val access: Flow<TriggerAccessStatus> get() = accessChecker.status
 
     private val manuallyArmed = MutableStateFlow<TriggerId?>(null)
+    private val editing = MutableStateFlow<TriggerId?>(null)
+    private var editSession: TriggerEditSession? = null
+    private var editJob: Job? = null
     private val screenInteractive = MutableStateFlow(readScreenInteractive())
     private val active = LinkedHashMap<TriggerId, Active>()
     private var runtimeScope: CoroutineScope? = null
@@ -117,9 +125,15 @@ class TriggerRuntime @Inject constructor(
         appScope.launch(dispatchers.main) {
             active.values.forEach { it.controller.disarm() }
             active.clear()
+            editJob?.cancel()
+            editJob = null
+            editSession = null
+            editing.value = null
             overlays.hideAll()
             scope?.cancel()
-            _status.update { it.copy(visibleTriggerIds = emptySet(), blockedReason = null, executing = false) }
+            _status.update {
+                it.copy(visibleTriggerIds = emptySet(), blockedReason = null, executing = false, editingTriggerId = null)
+            }
         }
         logger.i(TAG, "stopped")
     }
@@ -142,21 +156,122 @@ class TriggerRuntime @Inject constructor(
         _status.update { it.copy(manuallyArmedId = null) }
     }
 
-    override suspend fun test(configurationJson: String): AppResult<Unit> {
+    override suspend fun test(configurationJson: String): AppResult<Unit> = testPlan(configurationJson, onlyPoint = null)
+
+    override suspend fun testTarget(configurationJson: String, pointId: String): AppResult<Unit> =
+        testPlan(configurationJson, onlyPoint = TargetPointId(pointId))
+
+    private suspend fun testPlan(configurationJson: String, onlyPoint: TargetPointId?): AppResult<Unit> {
         val current = accessChecker.current()
         if (!current.ready) return AppResult.err(ErrorCode.GESTURE_DISPATCH_UNAVAILABLE, detail = current.missing.joinToString())
         val geometry = DisplayGeometryReader.read(context) ?: return AppResult.err(ErrorCode.DISPLAY_UNAVAILABLE)
         return TriggerJson.decodeConfiguration(configurationJson)
-            .flatMap { config -> TargetResolver.resolve(config, geometry, adapter.capability(), ignoreEnabledFlag = true) }
-            .flatMap { plan ->
-                logger.d(TAG, "TEST ${plan.triggerId}: ${plan.contacts.size} targets, mode ${plan.mode}")
-                _status.update { it.copy(executing = true) }
-                try {
-                    withContext(dispatchers.default) { TriggerPlanExecutor.execute(plan, adapter, logger, ExecutionReason.TEST) }
-                } finally {
-                    _status.update { it.copy(executing = false) }
-                }
+            .flatMap { config ->
+                TargetResolver.resolve(config, geometry, adapter.capability(), ignoreEnabledFlag = true, onlyPoint = onlyPoint)
             }
+            .flatMap { plan -> runTest(plan) }
+    }
+
+    private suspend fun runTest(plan: InjectionPlan): AppResult<Unit> {
+        logger.d(
+            TAG,
+            "TEST ${plan.triggerId}: ${plan.contacts.size} targets, mode ${plan.mode}, reaction ${plan.reactionDelayMs} ms",
+        )
+        _status.update { it.copy(executing = true) }
+        return try {
+            withContext(dispatchers.default) { TriggerPlanExecutor.execute(plan, adapter, logger, ExecutionReason.TEST) }
+        } finally {
+            _status.update { it.copy(executing = false) }
+        }
+    }
+
+    // ---- on-screen edit mode ------------------------------------------------------------------------------
+
+    override suspend fun startOverlayEdit(triggerId: String): AppResult<Unit> {
+        val stored = repository.get(TriggerId(triggerId)) ?: return AppResult.err(ErrorCode.TRIGGER_NOT_FOUND)
+        val current = accessChecker.current()
+        if (!current.ready) return AppResult.err(ErrorCode.GESTURE_DISPATCH_UNAVAILABLE, detail = current.missing.joinToString())
+        withContext(dispatchers.main) {
+            if (editing.value != stored.id) editSession = null
+            editing.value = stored.id
+        }
+        _status.update { it.copy(editingTriggerId = triggerId) }
+        return AppResult.ok(Unit)
+    }
+
+    override suspend fun stopOverlayEdit() {
+        withContext(dispatchers.main) {
+            editJob?.cancel()
+            editJob = null
+            finishEdit()
+        }
+    }
+
+    /** Main thread. Leaves edit mode; the gameplay overlays come back through the next reconcile. */
+    private fun finishEdit() {
+        editing.value = null
+        editSession = null
+        overlays.hideEditor()
+        _status.update { it.copy(editingTriggerId = null) }
+    }
+
+    private fun showEditor(service: AccessibilityService, config: TriggerConfiguration, geometry: DisplayGeometry): Boolean {
+        val density = service.resources.displayMetrics.density
+        val session = editSession?.takeIf { it.config.id == config.id } ?: TriggerEditSession(
+            initial = config,
+            geometry = geometry,
+            handleRadiusPx = EDIT_HANDLE_DP * density,
+            touchSlopPx = ViewConfiguration.get(service).scaledTouchSlop.toFloat(),
+        ).also { editSession = it }
+        val existingView = overlays.editorView
+        if (existingView != null && existingView.session === session && session.geometry == geometry) return true
+        // First show, or the display changed (fold, density, resolution): the session keeps the edits, the window
+        // is rebuilt at the new size so view pixels stay equal to physical pixels.
+        if (session.geometry != geometry) session.updateGeometry(geometry)
+        val view = TriggerEditOverlayView(service, session) { command -> onEditCommand(command) }
+        return overlays.showEditor(service, view, geometry)
+    }
+
+    private fun onEditCommand(command: EditCommand) {
+        val session = editSession ?: return
+        val scope = runtimeScope ?: return
+        if (editJob?.isActive == true) return
+        editJob = scope.launch {
+            when (command) {
+                EditCommand.TEST -> testFromEditor(session)
+                EditCommand.DONE -> {
+                    val result = repository.save(session.config)
+                    if (result is AppResult.Err) {
+                        // Typically "no enabled targets": keep the editor open so the user can fix it.
+                        logger.w(TAG, "edit-mode save refused: ${result.error.code}")
+                    } else {
+                        finishEdit()
+                    }
+                }
+                EditCommand.CANCEL -> finishEdit()
+                EditCommand.ADD, EditCommand.DELETE, EditCommand.TOGGLE -> Unit // handled inside the view
+            }
+        }
+    }
+
+    private suspend fun testFromEditor(session: TriggerEditSession) {
+        val view = overlays.editorView ?: return
+        val resolved = TargetResolver.resolve(session.config, session.geometry, adapter.capability(), ignoreEnabledFlag = true)
+        val plan = when (resolved) {
+            is AppResult.Ok -> resolved.value
+            is AppResult.Err -> {
+                logger.w(TAG, "edit-mode test refused: ${resolved.error.code}")
+                return
+            }
+        }
+        view.busy = true
+        overlays.setEditorTouchable(false) // injected contacts must reach the game, not this window
+        try {
+            runTest(plan)
+        } finally {
+            overlays.setEditorTouchable(true)
+            view.busy = false
+        }
     }
 
     // ---- inputs -------------------------------------------------------------------------------------------
@@ -177,7 +292,8 @@ class TriggerRuntime @Inject constructor(
             accessChecker.status.map { it.ready },
             screenInteractive,
         ) { configs, foreground, armed, ready, interactive -> Snapshot(configs, foreground, armed, ready, interactive) }
-        return combine(base, registry.displayChanges, prefs.preferences.map { it.showTriggerIndicator }) { s, _, indicator ->
+        val indicator = prefs.preferences.map { it.showTriggerIndicator }
+        return combine(base, registry.displayChanges, indicator, editing) { s, _, showIndicator, editingId ->
             RuntimeInput(
                 configurations = s.configs,
                 foregroundPackage = s.foreground,
@@ -186,7 +302,8 @@ class TriggerRuntime @Inject constructor(
                 accessReady = s.accessReady,
                 screenInteractive = s.interactive,
                 geometry = currentGeometry(),
-            ) to indicator
+                editingId = editingId,
+            ) to showIndicator
         }
     }
 
@@ -202,6 +319,17 @@ class TriggerRuntime @Inject constructor(
         val decision = TriggerRuntimePolicy.decide(input)
         val service = registry.service.value
         val geometry = input.geometry
+        val editingConfig = decision.editing
+        if (editingConfig != null && service != null && geometry != null) {
+            removeAll()
+            val shown = showEditor(service, editingConfig, geometry)
+            publish(if (shown) decision else decision.copy(blockedReason = ErrorCode.TRIGGER_OVERLAY_FAILED))
+            return
+        }
+        overlays.hideEditor() // edit mode paused (own app / other app / screen off); the session survives
+        if (input.editingId != null && decision.blockedReason == ErrorCode.TRIGGER_NOT_FOUND) {
+            finishEdit() // configuration deleted while being edited: never show a stale editor
+        }
         if (service == null || geometry == null || decision.visible.isEmpty()) {
             removeAll()
             publish(decision)
@@ -233,6 +361,7 @@ class TriggerRuntime @Inject constructor(
         when (val outcome = entry.controller.onTouch(touch)) {
             is TouchOutcome.Activated -> {
                 overlays.flash(id)
+                overlays.setTouchable(id, false) // targets inside the area must hit the game, not this window
                 _status.update {
                     it.copy(
                         lastActivationAtMillis = clock.now().toEpochMilliseconds(),
@@ -247,6 +376,7 @@ class TriggerRuntime @Inject constructor(
     }
 
     private fun onExecuted(id: TriggerId, result: AppResult<Unit>) {
+        overlays.setTouchable(id, true)
         _status.update { it.copy(executing = false) }
         if (result is AppResult.Err) logger.w(TAG, "trigger $id failed: ${result.error.code}")
     }
@@ -302,5 +432,6 @@ class TriggerRuntime @Inject constructor(
     private companion object {
         const val TAG = "TriggerRuntime"
         const val SETTLE_MS = 120L
+        const val EDIT_HANDLE_DP = 22f
     }
 }

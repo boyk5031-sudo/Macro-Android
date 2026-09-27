@@ -25,6 +25,9 @@ class TriggerActivationGate(private val cooldownMs: Long) {
 
     val isHeld: Boolean get() = held
 
+    /** True while a new press would still be rejected because of the last activation. */
+    fun inCooldown(nowMs: Long): Boolean = lastActivationAt?.let { nowMs - it < cooldownMs } == true
+
     fun onDown(nowMs: Long): GateDecision {
         if (held) return GateDecision.Reject(GateRejection.ALREADY_HELD)
         held = true

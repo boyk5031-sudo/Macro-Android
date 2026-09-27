@@ -21,3 +21,7 @@ First release. Scope per `docs/phase-0-feasibility-and-constraints.md` (MVP colu
   with canvas + numeric fields, per-app binding or manual arming, cooldown/repeat, in-editor test with landing
   proof, SAF import/export, Room v2 (`trigger_configs`), accessibility disclosure v2. See
   `docs/phase-12-trigger-areas.md`.
+- Trigger Areas: configurable trigger reaction delay (0–5000 ms with presets), per-target test button, explicit
+  trigger state machine, on-screen edit mode over the game (drag area/points, add/delete/toggle, test, done),
+  and a fix so injected taps whose target lies inside the zone reach the game (overlay untouchable during
+  execution).

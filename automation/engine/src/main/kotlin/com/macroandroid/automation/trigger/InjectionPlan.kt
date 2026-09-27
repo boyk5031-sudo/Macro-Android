@@ -22,6 +22,8 @@ data class InjectionPlan(
     val repeatCount: Int,
     val repeatDelayMs: Long,
     val compatibility: DisplayCompatibility,
+    /** Waited once, before the first contact of the first run. */
+    val reactionDelayMs: Long = 0L,
 ) {
     val isEmpty: Boolean get() = contacts.isEmpty()
 
@@ -32,7 +34,7 @@ data class InjectionPlan(
                 ExecutionMode.SEQUENTIAL -> contacts.sumOf { it.delayBeforeMs + it.holdMs }
                 ExecutionMode.MULTI_TOUCH -> contacts.maxOfOrNull { it.holdMs } ?: 0L
             }
-            return perRun * repeatCount + repeatDelayMs * (repeatCount - 1).coerceAtLeast(0)
+            return reactionDelayMs + perRun * repeatCount + repeatDelayMs * (repeatCount - 1).coerceAtLeast(0)
         }
 }
 

@@ -97,6 +97,7 @@ object TriggerFixtures {
         enabled: Boolean = true,
         packageName: String? = null,
         repeatCount: Int = 1,
+        reactionDelayMs: Long = 0,
         id: String = "abc123",
         geometry: DisplayGeometry = PORTRAIT,
     ) = TriggerConfiguration(
@@ -109,6 +110,7 @@ object TriggerFixtures {
         executionMode = mode,
         cooldownMs = cooldownMs,
         repeatCount = repeatCount,
+        reactionDelayMs = reactionDelayMs,
         authoredDisplay = authored(geometry),
     )
 }

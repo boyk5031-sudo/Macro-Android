@@ -192,6 +192,50 @@ class TriggerControllerTest {
     }
 
     @Test
+    fun `reaction delay postpones the first contact and repeats keep their own interval`() = runTest {
+        val targets = listOf(TriggerFixtures.point(400, 300), TriggerFixtures.point(550, 300, delayBeforeMs = 20))
+        val h = Harness(this, TriggerFixtures.config(targets = targets, reactionDelayMs = 200, repeatCount = 2))
+        h.down(150, 750, at = 0)
+        runCurrent()
+        assertThat(h.adapter.gestures).isEmpty() // nothing injected before the reaction delay elapsed
+        advanceTimeBy(199)
+        assertThat(h.adapter.gestures).isEmpty()
+        advanceUntilIdle()
+        // run 1: 200, 200+50+20 = 270; repeat delay 100 after the hold ends at 320 → run 2: 420, 490
+        assertThat(h.adapter.gestures.map { it.startedAt }).containsExactly(200L, 270L, 420L, 490L).inOrder()
+        assertThat(h.adapter.points()).containsExactly(400 to 300, 550 to 300, 400 to 300, 550 to 300).inOrder()
+    }
+
+    @Test
+    fun `state machine walks idle, executing, waiting for release, cooldown, idle`() = runTest {
+        val h = Harness(this, TriggerFixtures.config(targets = listOf(TriggerFixtures.point(400, 300)), cooldownMs = 500))
+        assertThat(h.controller.state(0)).isEqualTo(TriggerState.IDLE)
+        h.down(150, 750, at = 0)
+        runCurrent()
+        assertThat(h.controller.state(0)).isEqualTo(TriggerState.EXECUTING)
+        advanceUntilIdle() // the 50 ms tap is done, finger still down
+        assertThat(h.controller.state(60)).isEqualTo(TriggerState.WAITING_FOR_RELEASE)
+        assertThat(h.down(150, 750, at = 60)).isEqualTo(TouchOutcome.Rejected(ErrorCode.TRIGGER_BUSY))
+        h.up(at = 100)
+        assertThat(h.controller.state(100)).isEqualTo(TriggerState.COOLDOWN)
+        assertThat(h.down(150, 750, at = 100)).isEqualTo(TouchOutcome.Rejected(ErrorCode.TRIGGER_COOLDOWN))
+        h.up(at = 120)
+        assertThat(h.controller.state(500)).isEqualTo(TriggerState.IDLE)
+        assertThat(h.down(150, 750, at = 500)).isInstanceOf(TouchOutcome.Activated::class.java)
+    }
+
+    @Test
+    fun `disarm during the reaction delay injects nothing`() = runTest {
+        val h = Harness(this, TriggerFixtures.config(reactionDelayMs = 500))
+        h.down(150, 750, at = 0)
+        advanceTimeBy(100)
+        h.controller.disarm()
+        advanceUntilIdle()
+        assertThat(h.adapter.gestures).isEmpty()
+        assertThat(h.controller.state(100)).isEqualTo(TriggerState.IDLE)
+    }
+
+    @Test
     fun `missing injection capability is surfaced as the adapter reason`() = runTest {
         val h = Harness(this, TriggerFixtures.config())
         h.adapter.capability = InjectionCapability(false, 0, ErrorCode.A11Y_SERVICE_DISCONNECTED)

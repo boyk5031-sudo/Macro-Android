@@ -3,6 +3,7 @@ package com.macroandroid.feature.trigger.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material3.Button
@@ -73,6 +76,7 @@ import com.macroandroid.automation.trigger.ExecutionMode
 import com.macroandroid.automation.trigger.TargetActionType
 import com.macroandroid.automation.trigger.TargetPoint
 import com.macroandroid.automation.trigger.TriggerConfiguration
+import com.macroandroid.automation.trigger.TriggerLimits
 import com.macroandroid.core.common.error.ErrorCode
 import com.macroandroid.core.platform.DisplayGeometryReader
 import com.macroandroid.core.ui.component.LoadingState
@@ -109,6 +113,7 @@ fun TriggerEditorRoute(
                 is TriggerEditorEvent.Saved -> onBack()
                 is TriggerEditorEvent.Error -> snackbar.showSnackbar(resources.getString(ErrorMessages.titleRes(e.error)))
                 TriggerEditorEvent.TestSucceeded -> snackbar.showSnackbar(resources.getString(R.string.trg_test_done))
+                is TriggerEditorEvent.EditOnScreenStarted -> onBack()
             }
         }
     }
@@ -185,7 +190,7 @@ private fun EditorContent(
         item { ExecutionSection(config, viewModel) }
         item { SectionTitle(stringResource(R.string.trg_points_title, config.targetPoints.size)) }
         itemsIndexed(config.targetPoints, key = { _, p -> p.id.value }) { index, point ->
-            PointRow(index, point, config, state.selectedPointId == point.id, viewModel)
+            PointRow(index, point, config, state.selectedPointId == point.id, state.canTestPoint, viewModel)
         }
     }
 }
@@ -209,6 +214,24 @@ private fun Toolbar(state: TriggerEditorUiState, viewModel: TriggerEditorViewMod
             Icon(Icons.Outlined.SportsEsports, contentDescription = null)
             Text(stringResource(R.string.trg_test_in_game))
         }
+    }
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        OutlinedButton(onClick = viewModel::editOnScreen, enabled = state.canEditOnScreen) {
+            Icon(Icons.Outlined.OpenInFull, contentDescription = null)
+            Text(stringResource(R.string.trg_edit_on_screen))
+        }
+        Text(
+            stringResource(
+                when {
+                    state.isNew || state.dirty -> R.string.trg_edit_on_screen_save_first
+                    state.access?.ready != true -> R.string.trg_edit_on_screen_needs_access
+                    else -> R.string.trg_edit_on_screen_help
+                },
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 
@@ -353,6 +376,26 @@ private fun ExecutionSection(config: TriggerConfiguration, viewModel: TriggerEdi
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(stringResource(R.string.trg_reaction_delay), style = MaterialTheme.typography.bodyMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IntField(stringResource(R.string.trg_reaction_delay_ms), config.reactionDelayMs.toInt(), Modifier.weight(1f)) {
+                viewModel.setReactionDelay(it.toLong())
+            }
+            Row(Modifier.weight(2f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TriggerLimits.REACTION_DELAY_PRESETS_MS.forEach { preset ->
+                    FilterChip(
+                        selected = config.reactionDelayMs == preset,
+                        onClick = { viewModel.setReactionDelay(preset) },
+                        label = { Text(stringResource(R.string.trg_ms_value, preset)) },
+                    )
+                }
+            }
+        }
+        Text(
+            stringResource(R.string.trg_reaction_delay_help),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             IntField(stringResource(R.string.trg_cooldown_ms), config.cooldownMs.toInt(), Modifier.weight(1f)) {
                 viewModel.setCooldown(it.toLong())
@@ -388,6 +431,7 @@ private fun PointRow(
     point: TargetPoint,
     config: TriggerConfiguration,
     selected: Boolean,
+    canTestPoint: Boolean,
     viewModel: TriggerEditorViewModel,
 ) {
     val d = config.authoredDisplay
@@ -411,6 +455,9 @@ private fun PointRow(
                 val notLast = index < config.targetPoints.lastIndex
                 IconButton(onClick = { viewModel.reorderPoint(point.id, +1) }, enabled = notLast) {
                     Icon(Icons.Outlined.KeyboardArrowDown, contentDescription = stringResource(R.string.trg_move_down))
+                }
+                IconButton(onClick = { viewModel.testPoint(point.id) }, enabled = canTestPoint) {
+                    Icon(Icons.Outlined.PlayArrow, contentDescription = stringResource(R.string.trg_test_point))
                 }
                 IconButton(onClick = { viewModel.deletePoint(point.id) }) {
                     Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.trg_delete_point))

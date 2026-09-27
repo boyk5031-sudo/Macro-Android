@@ -112,17 +112,30 @@ data class TriggerConfiguration(
     val triggerArea: TriggerArea,
     val targetPoints: List<TargetPoint> = emptyList(),
     @EncodeDefault(EncodeDefault.Mode.ALWAYS) val executionMode: ExecutionMode = ExecutionMode.SEQUENTIAL,
+    /** Trigger reaction delay: time between the activating touch-down and the first injected contact. */
+    val reactionDelayMs: Long = TriggerLimits.DEFAULT_REACTION_DELAY_MS,
     /** Minimum time between two activations; also absorbs duplicate down events of one physical gesture. */
     val cooldownMs: Long = TriggerLimits.DEFAULT_COOLDOWN_MS,
-    /** How many times the whole target sequence runs per activation (1 = once). */
+    /** How many times the whole target sequence runs per activation (1 = once, see [repeatMode]). */
     val repeatCount: Int = 1,
+    /** Repeat interval: pause between two runs of the sequence when [repeatCount] > 1. */
     val repeatDelayMs: Long = TriggerLimits.DEFAULT_REPEAT_DELAY_MS,
     val authoredDisplay: AuthoredDisplay,
     /** Per-configuration override of the global "show indicator during gameplay" setting. */
     val showIndicatorInGameplay: Boolean? = null,
 ) {
     val enabledTargets: List<TargetPoint> get() = targetPoints.filter { it.enabled }
+
+    /** Derived from [repeatCount]; not stored separately so older documents stay valid. */
+    val repeatMode: RepeatMode get() = if (repeatCount > 1) RepeatMode.FIXED_COUNT else RepeatMode.ONCE
 }
+
+/**
+ * How often one activation runs the target sequence. "Repeat while held" is deliberately absent: dispatching a
+ * gesture cancels the user's own touch on the overlay, so a continued hold cannot be observed with the
+ * accessibility input mechanism (docs/phase-12 §4.4) – offering it would be a lie.
+ */
+enum class RepeatMode { ONCE, FIXED_COUNT }
 
 /** Hard limits; mirrored in validation and in the editor. */
 object TriggerLimits {
@@ -140,6 +153,11 @@ object TriggerLimits {
     const val DEFAULT_TAP_HOLD_MS = 50L
     const val DEFAULT_LONG_PRESS_HOLD_MS = 600L
     const val DEFAULT_COOLDOWN_MS = 150L
+    const val DEFAULT_REACTION_DELAY_MS = 0L
+    const val MAX_REACTION_DELAY_MS = 5_000L
+
+    /** Quick-pick values offered by the editor; any value up to [MAX_REACTION_DELAY_MS] can be typed. */
+    val REACTION_DELAY_PRESETS_MS: List<Long> = listOf(0L, 10L, 25L, 50L, 100L, 150L, 200L, 500L)
     const val DEFAULT_REPEAT_DELAY_MS = 100L
 
     /** Aspect ratio deviation above which the user is warned that coordinates may be off. */

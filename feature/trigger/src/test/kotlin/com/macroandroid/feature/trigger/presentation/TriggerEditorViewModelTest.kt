@@ -3,6 +3,7 @@ package com.macroandroid.feature.trigger.presentation
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.macroandroid.automation.testing.FakeAppLauncher
 import com.macroandroid.automation.testing.TriggerFixtures
 import com.macroandroid.automation.trigger.CoordinateSpace
 import com.macroandroid.automation.trigger.DisplayCompatibility
@@ -42,9 +43,10 @@ class TriggerEditorViewModelTest {
     private val repository = mockk<TriggerRepository>(relaxed = true)
     private val runtime = mockk<TriggerRuntimeContract>(relaxed = true)
     private val launcherApps = mockk<LauncherApps>()
+    private val appLauncher = FakeAppLauncher("com.game")
     private val access = MutableStateFlow(READY)
     private val geometry = TriggerFixtures.PORTRAIT
-    private val existing = TriggerFixtures.config()
+    private val existing = TriggerFixtures.config(packageName = "com.game")
 
     @Before
     fun setUp() {
@@ -61,7 +63,7 @@ class TriggerEditorViewModelTest {
 
     private fun newVm(id: String? = null): TriggerEditorViewModel {
         val handle = SavedStateHandle(if (id == null) emptyMap() else mapOf(TriggerEditorViewModel.ARG_TRIGGER_ID to id))
-        return TriggerEditorViewModel(handle, repository, runtime, launcherApps).also { it.onGeometry(geometry) }
+        return TriggerEditorViewModel(handle, repository, runtime, launcherApps, appLauncher).also { it.onGeometry(geometry) }
     }
 
     @Test
@@ -98,6 +100,7 @@ class TriggerEditorViewModelTest {
             repository,
             runtime,
             launcherApps,
+            appLauncher,
         )
         vm.events.test {
             advanceUntilIdle()
@@ -257,6 +260,63 @@ class TriggerEditorViewModelTest {
         assertThat(vm.uiState.value.testPhase).isEqualTo(TestPhase.Idle)
         coVerify(exactly = 0) { runtime.test(any()) }
     }
+
+    @Test
+    fun `reaction delay is clamped and persisted in the configuration`() = runTest(dispatcher) {
+        val vm = newVm(existing.id.value)
+        advanceUntilIdle()
+        vm.setReactionDelay(150)
+        assertThat(vm.uiState.value.config?.reactionDelayMs).isEqualTo(150)
+        assertThat(vm.uiState.value.dirty).isTrue()
+        vm.setReactionDelay(TriggerLimits.MAX_REACTION_DELAY_MS + 1)
+        assertThat(vm.uiState.value.config?.reactionDelayMs).isEqualTo(TriggerLimits.MAX_REACTION_DELAY_MS)
+        vm.setReactionDelay(-5)
+        assertThat(vm.uiState.value.config?.reactionDelayMs).isEqualTo(0)
+        assertThat(vm.uiState.value.errors).isEmpty()
+    }
+
+    @Test
+    fun `single point test calls the per-target runtime path, even when the trigger has no enabled targets`() =
+        runTest(dispatcher) {
+            coEvery { runtime.testTarget(any(), any()) } returns AppResult.ok(Unit)
+            val vm = newVm(existing.id.value)
+            advanceUntilIdle()
+            val point = existing.targetPoints.first()
+            existing.targetPoints.forEach { vm.setPointEnabled(it.id, false) }
+            assertThat(vm.uiState.value.canTest).isFalse()
+            assertThat(vm.uiState.value.canTestPoint).isTrue()
+            vm.events.test {
+                vm.testPoint(point.id)
+                advanceUntilIdle()
+                assertThat(awaitItem()).isEqualTo(TriggerEditorEvent.TestSucceeded)
+            }
+            coVerify(exactly = 1) { runtime.testTarget(any(), point.id.value) }
+            coVerify(exactly = 0) { runtime.test(any()) }
+        }
+
+    @Test
+    fun `on-screen edit needs a saved configuration, then starts the runtime editor and launches the bound game`() =
+        runTest(dispatcher) {
+            coEvery { runtime.startOverlayEdit(any()) } returns AppResult.ok(Unit)
+            val vm = newVm(existing.id.value)
+            advanceUntilIdle()
+            vm.setName("renamed")
+            assertThat(vm.uiState.value.canEditOnScreen).isFalse() // dirty
+            vm.editOnScreen()
+            advanceUntilIdle()
+            coVerify(exactly = 0) { runtime.startOverlayEdit(any()) }
+
+            vm.save()
+            advanceUntilIdle()
+            assertThat(vm.uiState.value.canEditOnScreen).isTrue()
+            vm.events.test {
+                vm.editOnScreen()
+                advanceUntilIdle()
+                assertThat(awaitItem()).isEqualTo(TriggerEditorEvent.EditOnScreenStarted(existing.packageName))
+            }
+            coVerify(exactly = 1) { runtime.startOverlayEdit(existing.id.value) }
+            assertThat(appLauncher.launched).containsExactly(existing.packageName)
+        }
 
     @Test
     fun `rotation flags an orientation mismatch for the loaded trigger`() = runTest(dispatcher) {

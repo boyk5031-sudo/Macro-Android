@@ -18,4 +18,11 @@
         <item quantity="one">%1$d active</item>
         <item quantity="other">%1$d active</item>
     </plurals>
+    <string name="automation_android_trigger_edit_add">Add</string>
+    <string name="automation_android_trigger_edit_delete">Delete</string>
+    <string name="automation_android_trigger_edit_toggle">On/Off</string>
+    <string name="automation_android_trigger_edit_test">Test</string>
+    <string name="automation_android_trigger_edit_cancel">Cancel</string>
+    <string name="automation_android_trigger_edit_done">Done</string>
+    <string name="automation_android_trigger_edit_hint">Drag the area or its corner, drag points, tap empty space to add a point.</string>
 </resources>

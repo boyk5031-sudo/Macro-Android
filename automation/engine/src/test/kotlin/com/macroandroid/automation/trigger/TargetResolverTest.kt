@@ -53,6 +53,46 @@ class TargetResolverTest {
     }
 
     @Test
+    fun `single point plan taps only that point once, without reaction delay, repeats or its pre-delay`() {
+        val targets = listOf(
+            TriggerFixtures.point(400, 300),
+            TriggerFixtures.point(550, 300, delayBeforeMs = 80, enabled = false),
+        )
+        val config = TriggerFixtures.config(
+            targets = targets,
+            mode = ExecutionMode.MULTI_TOUCH,
+            repeatCount = 3,
+            reactionDelayMs = 250,
+        )
+        val plan = TargetResolver.resolve(config, PORTRAIT, capable, onlyPoint = targets[1].id)
+        val value = checkNotNull(plan.getOrNull())
+        assertThat(value.contacts.map { it.index to (it.x.toInt() to it.y.toInt()) }).containsExactly(2 to (550 to 300))
+        assertThat(value.contacts.single().delayBeforeMs).isEqualTo(0)
+        assertThat(value.mode).isEqualTo(ExecutionMode.SEQUENTIAL)
+        assertThat(value.repeatCount).isEqualTo(1)
+        assertThat(value.reactionDelayMs).isEqualTo(0)
+
+        val whole = checkNotNull(TargetResolver.resolve(config, PORTRAIT, capable).getOrNull())
+        assertThat(whole.reactionDelayMs).isEqualTo(250)
+        assertThat(whole.repeatCount).isEqualTo(3)
+
+        val unknown = TargetResolver.resolve(config, PORTRAIT, capable, onlyPoint = TargetPointId("missing"))
+        assertThat(unknown.errorOrNull()?.code).isEqualTo(ErrorCode.TRIGGER_NO_TARGETS)
+        // A single point can be tested while the configuration as a whole has no enabled target.
+        val allOff = TriggerFixtures.config(targets = listOf(TriggerFixtures.point(400, 300, enabled = false)))
+        assertThat(TargetResolver.resolve(allOff, PORTRAIT, capable, onlyPoint = allOff.targetPoints[0].id).isOk).isTrue()
+    }
+
+    @Test
+    fun `reaction delay outside its range is a timing error`() {
+        val config = TriggerFixtures.config(reactionDelayMs = TriggerLimits.MAX_REACTION_DELAY_MS + 1)
+        assertThat(TriggerValidator.validate(config).map { it.code }).contains(ErrorCode.TRIGGER_TIMING_RANGE)
+        assertThat(TriggerValidator.validate(config.copy(reactionDelayMs = 500))).isEmpty()
+        assertThat(config.copy(repeatCount = 1).repeatMode).isEqualTo(RepeatMode.ONCE)
+        assertThat(config.copy(repeatCount = 2).repeatMode).isEqualTo(RepeatMode.FIXED_COUNT)
+    }
+
+    @Test
     fun `validator catches timing ranges, names and package names`() {
         val config = TriggerFixtures.config(cooldownMs = 99_999)
         assertThat(TriggerValidator.validate(config).map { it.code }).contains(ErrorCode.TRIGGER_TIMING_RANGE)
