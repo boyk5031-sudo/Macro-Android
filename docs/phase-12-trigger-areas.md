@@ -245,8 +245,9 @@ manual acceptance flow in §11.
 
 * Games that render with `FLAG_SECURE` still receive injected gestures; games that detect accessibility services
   or synthetic input (anti-cheat) may ignore or penalise them — outside our control and stated in the disclosure.
-* `dispatchGesture` cancels the user's current touch: you cannot keep holding the zone while taps are injected;
-  hence no hold-to-repeat.
+* `dispatchGesture` cancels the user's current touch and is cancelled by the next real touch event (§10a): you
+  cannot keep holding the zone while taps are injected (hence no hold-to-repeat), and a finger resting on the game
+  (joystick) is cancelled when the target taps start.
 * Multi-touch is limited to 10 simultaneous contacts; some games treat rapid multi-pointer DOWN events
   differently from human input.
 * Overlays cannot appear over the lock screen, the system UI, or other accessibility overlays; Android may also
@@ -262,6 +263,67 @@ manual acceptance flow in §11.
 * An injected contact that lands inside the trigger area is delivered to the game only because the overlay is
   made untouchable during execution; if the system refuses the `updateViewLayout` (logged), such a target would
   be swallowed by the overlay — place targets outside the zone if you see that in logs.
+
+---
+
+## 10a. Concurrent input — what the platform allows, what it does not, and what was fixed
+
+**Requested behaviour:** a finger dragging on the game (joystick) must keep receiving MOVE events while another
+finger presses the trigger area, and the injected target taps must not cancel that drag.
+
+### Diagnosis (inspection of the shipped code, not a guess)
+
+| Layer | Where | Finding |
+| --- | --- | --- |
+| A. Overlay window | `TriggerOverlayController.newParams()` | Zone-sized `TYPE_ACCESSIBILITY_OVERLAY`, `NOT_FOCUSABLE`, `NOT_TOUCH_MODAL` — never full-screen, never captures outside touches. **But `FLAG_SPLIT_TOUCH` was missing.** `ViewRootImpl.setView` does not add it for raw `WindowManager.addView` windows (only `PhoneWindow` adds it to activity windows). Per the flag's documentation, without it "the first pointer that goes down determines the window to which all subsequent touches go until all pointers go up" — i.e. while the game already holds a finger, a second finger landing on the zone is not split to our window on versions that honour the flag. Fixed: the flag is now set explicitly. |
+| A. Overlay view | `TriggerOverlayView.onTouchEvent` | Consumed only its own stream (correct — touches outside the zone never reach it), but reduced it by `actionMasked` to DOWN/UP/CANCEL and ignored `ACTION_POINTER_DOWN/UP`, i.e. it assumed the first pointer of its stream was "the" finger. Fixed: it now translates every event into `PointerEvent` with `getPointerId()/findPointerIndex()/getActionIndex()` and makes no decision. |
+| B. Detection | *(new)* `PointerTracker` | Pure Kotlin, keyed by pointer **id**. First pointer down → `Pressed`; only that id's `POINTER_UP`/`UP` (or `CANCEL`) → `Released`; extra fingers are tracked but never presses. 8 unit tests including non-sequential ids and index shifts. |
+| C. Game touch | — | Never enters this process. A gesture that started on the game stays with the game's window for its whole lifetime; the trigger neither sees nor consumes it. No `requestDisallowInterceptTouchEvent`, no interception. |
+| D. Execution | `AccessibilityInputInjectionAdapter` → `AccessibilityService.dispatchGesture` | **This is the layer that cancels the user's gesture, and it does so inside `system_server`, not in this app.** |
+
+### Root cause (platform, verified against AOSP `MotionEventInjector.java`)
+
+`dispatchGesture` is implemented by `com.android.server.accessibility.MotionEventInjector`, an input filter that
+sits in front of every touch stream on the device:
+
+* `injectEventsMainThread(...)`: for a gesture that does not continue a previous injected stroke it calls
+  `cancelAnyPendingInjectedEvents()` and then `cancelAnyGestureInProgress(EVENT_SOURCE)` — the code comment reads
+  *"Injected gestures have been canceled, but real gestures still need cancelling"*. `cancelAnyGestureInProgress`
+  synthesises an `ACTION_CANCEL` for the touchscreen source and sends it down the pipeline → **the game's
+  joystick finger receives ACTION_CANCEL the moment a target tap is injected.**
+* `onMotionEvent(...)` (every real touch event, including the joystick finger's MOVE events) calls
+  `cancelAnyPendingInjectedEvents()` → **the injected gesture is cancelled (`onCancelled`) by the next real MOVE.**
+
+The public Javadoc states the same: *"Any gestures currently in progress, whether from the user, this service,
+or another service, will be cancelled."* No overlay design, flag, thread or pointer bookkeeping in the app can
+change this; it happens before events reach any window.
+
+### What is and is not achievable (honest matrix)
+
+| Test | Detection (layers A–C) | Execution (layer D, `dispatchGesture`) |
+| --- | --- | --- |
+| 1. Finger 1 drags → trigger pressed → finger 1 keeps moving | ✅ press is split to the zone window; the drag is untouched by the press | ❌ the *target taps* cancel finger 1 (platform) |
+| 2. Finger 1 moving → trigger pressed → no ACTION_CANCEL for finger 1 | ✅ from the press itself | ❌ from the injected taps (platform) |
+| 3. Trigger pressed first → finger 1 starts dragging → both continue | ✅ finger 1 goes to the game; trigger state unchanged | ❌ finger 1's first real event cancels an in-flight injection (platform) |
+| 4. Two fingers on the game, trigger stays inactive | ✅ nothing reaches the zone window | n/a |
+| 5. Rotation keeps the trigger mapped | ✅ normalised storage + `authoredDisplay`; window rebuilt per geometry | n/a |
+| 6. Trigger disabled → touch behaviour unchanged | ✅ no window exists at all when disabled/unarmed | n/a |
+
+The only legitimate ways to obtain injected pointers that the dispatcher treats as an *independent device* are
+outside this project's constraints (Play distribution, no shell, no root, no hidden APIs): shell-uid
+`InputManager.injectInputEvent` via ADB/Shizuku (hidden API, needs debugging re-authorised every boot),
+`VirtualDeviceManager` virtual touchscreens (`CREATE_VIRTUAL_DEVICE`, signature/role-held), or root. Even those
+depend on Android 14+ multi-device input to keep a real finger and an injected stream alive together, which cannot
+be verified here. They are therefore **not** implemented; the limitation is stated in the editor
+(`trg_input_note`), in the debug read-out and in the activation log line.
+
+### Debug mode
+
+Settings ▸ *Trigger debug read-out* adds a `FLAG_NOT_TOUCHABLE` window (never an input target) that prints, per
+active trigger: state, last masked action + action index, and for each pointer of the zone window `ID`, `idx`,
+`X`, `Y`, phase, and `*` for the activating pointer. It cannot list the game's pointers — they never enter this
+process — which is the proof of independence; to watch both streams together enable Developer options ▸
+*Pointer location*.
 
 ---
 

@@ -44,6 +44,12 @@ data class InjectionCapability(
     val maxSimultaneousContacts: Int,
     /** Why [available] is false. */
     val reason: ErrorCode? = null,
+    /**
+     * True only if injected contacts can coexist with a finger the user already has on the screen. False for
+     * `dispatchGesture`, which cancels the user's in-progress gesture and is itself cancelled by the next real
+     * touch event (platform behaviour, see docs/phase-12-trigger-areas.md §12).
+     */
+    val coexistsWithUserTouch: Boolean = false,
 )
 
 /**

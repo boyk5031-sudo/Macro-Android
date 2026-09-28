@@ -48,6 +48,7 @@ class SettingsViewModel @Inject constructor(
     fun setConfirmBeforeRun(v: Boolean) = viewModelScope.launch { prefs.setConfirmBeforeRun(v) }
     fun setKeepScreenOn(v: Boolean) = viewModelScope.launch { prefs.setKeepScreenOn(v) }
     fun setShowTriggerIndicator(v: Boolean) = viewModelScope.launch { prefs.setShowTriggerIndicator(v) }
+    fun setShowTriggerDebugHud(v: Boolean) = viewModelScope.launch { prefs.setShowTriggerDebugHud(v) }
     fun setHistoryRetentionDays(v: Int) = viewModelScope.launch { prefs.setHistoryRetentionDays(v) }
     fun setHistoryMaxRuns(v: Int) = viewModelScope.launch { prefs.setHistoryMaxRuns(v) }
     fun setCopyApkOnImport(v: Boolean) = viewModelScope.launch { prefs.setCopyApkOnImport(v) }

@@ -14,13 +14,18 @@ import com.macroandroid.automation.android.accessibility.AccessibilityServiceReg
 import com.macroandroid.automation.trigger.CoordinateConverter
 import com.macroandroid.automation.trigger.ExecutionReason
 import com.macroandroid.automation.trigger.InjectionPlan
+import com.macroandroid.automation.trigger.PointerEvent
+import com.macroandroid.automation.trigger.PointerTracker
+import com.macroandroid.automation.trigger.PointerTransition
 import com.macroandroid.automation.trigger.RuntimeDecision
 import com.macroandroid.automation.trigger.RuntimeInput
 import com.macroandroid.automation.trigger.TargetPointId
 import com.macroandroid.automation.trigger.TargetResolver
+import com.macroandroid.automation.trigger.TouchKind
 import com.macroandroid.automation.trigger.TouchOutcome
 import com.macroandroid.automation.trigger.TriggerConfiguration
 import com.macroandroid.automation.trigger.TriggerController
+import com.macroandroid.automation.trigger.TriggerDebugFormatter
 import com.macroandroid.automation.trigger.TriggerEditSession
 import com.macroandroid.automation.trigger.TriggerId
 import com.macroandroid.automation.trigger.TriggerJson
@@ -83,7 +88,13 @@ class TriggerRuntime @Inject constructor(
     private val clock: Clock,
 ) : TriggerRuntimeContract {
 
-    private class Active(val controller: TriggerController, var config: TriggerConfiguration)
+    /** Layer B (tracker) and the decision layer (controller) for one visible trigger; the view only translates. */
+    private class Active(
+        val controller: TriggerController,
+        var config: TriggerConfiguration,
+        val tracker: PointerTracker = PointerTracker(),
+        var lastEvent: PointerEvent? = null,
+    )
 
     private val _status = MutableStateFlow(TriggerRuntimeStatus())
     override val status: StateFlow<TriggerRuntimeStatus> = _status.asStateFlow()
@@ -284,7 +295,9 @@ class TriggerRuntime @Inject constructor(
         val interactive: Boolean,
     )
 
-    private fun inputs(): Flow<Pair<RuntimeInput, Boolean>> {
+    private data class Visuals(val showIndicator: Boolean, val debugHud: Boolean)
+
+    private fun inputs(): Flow<Pair<RuntimeInput, Visuals>> {
         val base = combine(
             repository.observeAll().map { rows -> rows.map { it.config } },
             registry.foregroundPackage,
@@ -292,8 +305,8 @@ class TriggerRuntime @Inject constructor(
             accessChecker.status.map { it.ready },
             screenInteractive,
         ) { configs, foreground, armed, ready, interactive -> Snapshot(configs, foreground, armed, ready, interactive) }
-        val indicator = prefs.preferences.map { it.showTriggerIndicator }
-        return combine(base, registry.displayChanges, indicator, editing) { s, _, showIndicator, editingId ->
+        val visuals = prefs.preferences.map { Visuals(it.showTriggerIndicator, it.showTriggerDebugHud) }
+        return combine(base, registry.displayChanges, visuals, editing) { s, _, v, editingId ->
             RuntimeInput(
                 configurations = s.configs,
                 foregroundPackage = s.foreground,
@@ -303,7 +316,7 @@ class TriggerRuntime @Inject constructor(
                 screenInteractive = s.interactive,
                 geometry = currentGeometry(),
                 editingId = editingId,
-            ) to showIndicator
+            ) to v
         }
     }
 
@@ -314,14 +327,16 @@ class TriggerRuntime @Inject constructor(
 
     // ---- reconcile ----------------------------------------------------------------------------------------
 
-    private suspend fun reconcile(pair: Pair<RuntimeInput, Boolean>) {
-        val (input, globalIndicator) = pair
+    private suspend fun reconcile(pair: Pair<RuntimeInput, Visuals>) {
+        val (input, visuals) = pair
+        val globalIndicator = visuals.showIndicator
         val decision = TriggerRuntimePolicy.decide(input)
         val service = registry.service.value
         val geometry = input.geometry
         val editingConfig = decision.editing
         if (editingConfig != null && service != null && geometry != null) {
             removeAll()
+            overlays.hideDebugHud()
             val shown = showEditor(service, editingConfig, geometry)
             publish(if (shown) decision else decision.copy(blockedReason = ErrorCode.TRIGGER_OVERLAY_FAILED))
             return
@@ -332,6 +347,7 @@ class TriggerRuntime @Inject constructor(
         }
         if (service == null || geometry == null || decision.visible.isEmpty()) {
             removeAll()
+            overlays.hideDebugHud() // the read-out only exists while a trigger area is on screen
             publish(decision)
             return
         }
@@ -350,14 +366,42 @@ class TriggerRuntime @Inject constructor(
             entry.controller.geometry = geometry
             val bounds = CoordinateConverter.areaToDisplay(config.triggerArea, geometry)
             val indicator = config.showIndicatorInGameplay ?: globalIndicator
-            val shown = overlays.show(service, config.id, bounds, config.name, indicator) { touch -> onTouch(config.id, touch) }
+            val shown = overlays.show(service, config.id, bounds, config.name, indicator) { e -> onPointerEvent(config.id, e) }
             if (!shown) overlayFailed = true
+        }
+        if (visuals.debugHud) {
+            overlays.showDebugHud(service, geometry)
+            refreshDebugHud()
+        } else {
+            overlays.hideDebugHud()
         }
         publish(if (overlayFailed) decision.copy(blockedReason = ErrorCode.TRIGGER_OVERLAY_FAILED) else decision)
     }
 
-    private fun onTouch(id: TriggerId, touch: TriggerTouch) {
+    /**
+     * Layer A → B → decision. Runs on the main thread for every event of the trigger window's own stream. The
+     * tracker reduces the multi-pointer stream to at most one press/release per event, keyed by pointer id; only
+     * those reach the controller. MOVE and extra fingers update the debug read-out and nothing else.
+     */
+    private fun onPointerEvent(id: TriggerId, event: PointerEvent) {
         val entry = active[id] ?: return
+        entry.lastEvent = event
+        when (val transition = entry.tracker.onEvent(event)) {
+            is PointerTransition.Pressed -> {
+                val p = transition.pointer
+                deliver(id, entry, TriggerTouch(TouchKind.DOWN, p.xPx, p.yPx, event.atMs, p.id))
+            }
+            is PointerTransition.Released -> {
+                val p = transition.pointer
+                val kind = if (transition.cancelled) TouchKind.CANCEL else TouchKind.UP
+                deliver(id, entry, TriggerTouch(kind, p.xPx, p.yPx, event.atMs, p.id))
+            }
+            PointerTransition.None -> Unit
+        }
+        if (overlays.debugHudVisible) refreshDebugHud()
+    }
+
+    private fun deliver(id: TriggerId, entry: Active, touch: TriggerTouch) {
         when (val outcome = entry.controller.onTouch(touch)) {
             is TouchOutcome.Activated -> {
                 overlays.flash(id)
@@ -370,20 +414,36 @@ class TriggerRuntime @Inject constructor(
                     )
                 }
             }
-            is TouchOutcome.Rejected -> logger.d(TAG, "press on $id rejected: ${outcome.reason}")
+            is TouchOutcome.Rejected -> logger.d(TAG, "press on $id (pointer ${touch.pointerId}) rejected: ${outcome.reason}")
             TouchOutcome.Ignored -> Unit
         }
     }
+
+    private fun refreshDebugHud() {
+        val now = clock.now().toEpochMilliseconds()
+        overlays.updateDebugHud(TriggerDebugFormatter.lines(active.values.map { it.toDebugEntry(now) }, adapter.capability()))
+    }
+
+    private fun Active.toDebugEntry(nowMs: Long) = TriggerDebugFormatter.Entry(
+        name = config.name,
+        state = controller.state(nowMs),
+        lastAction = tracker.lastActionSeen,
+        lastActionIndex = lastEvent?.actionIndex,
+        pointers = tracker.pointers,
+    )
 
     private fun onExecuted(id: TriggerId, result: AppResult<Unit>) {
         overlays.setTouchable(id, true)
         _status.update { it.copy(executing = false) }
         if (result is AppResult.Err) logger.w(TAG, "trigger $id failed: ${result.error.code}")
+        if (overlays.debugHudVisible) refreshDebugHud()
     }
 
     private suspend fun remove(id: TriggerId) {
         overlays.hide(id)
-        active.remove(id)?.controller?.disarm()
+        val entry = active.remove(id) ?: return
+        entry.tracker.reset() // window gone: any pointer it held is over
+        entry.controller.disarm()
     }
 
     private suspend fun removeAll() {

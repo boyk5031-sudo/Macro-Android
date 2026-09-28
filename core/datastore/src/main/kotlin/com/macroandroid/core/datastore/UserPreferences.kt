@@ -22,6 +22,8 @@ data class UserPreferences(
     val notificationsRationaleShown: Boolean = false,
     /** Trigger Areas: draw the outline of an armed trigger during gameplay (off = fully transparent zone). */
     val showTriggerIndicator: Boolean = true,
+    /** Trigger Areas debug mode: on-screen read-out of pointer ids/indices/actions and trigger state. */
+    val showTriggerDebugHud: Boolean = false,
 ) {
     val accessibilityConsentGranted: Boolean get() = accessibilityConsentGrantedAt != null
 

@@ -6,20 +6,28 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Build
 import android.view.MotionEvent
 import android.view.View
-import com.macroandroid.automation.trigger.TouchKind
-import com.macroandroid.automation.trigger.TriggerTouch
+import com.macroandroid.automation.trigger.PointerAction
+import com.macroandroid.automation.trigger.PointerEvent
+import com.macroandroid.automation.trigger.PointerSample
 
 /**
- * The gameplay overlay for ONE trigger area. It is exactly the size of the area, so touches outside never reach
- * it (they go to the game); touches inside are consumed as trigger presses and forwarded in physical pixels.
+ * The gameplay overlay for ONE trigger area (layer A: visuals + raw event translation, nothing else).
+ *
+ * The window is exactly the size of the area and has `FLAG_SPLIT_TOUCH`, so the system routes to it only the
+ * pointers that go DOWN inside the area; a finger that is already down on the game keeps its own stream in the
+ * game's window and is never seen, moved or cancelled by this view. Every event this window does receive is
+ * translated into a [PointerEvent] with stable pointer ids (`getPointerId`) – never bare indices – and handed
+ * to [PointerTracker] via [onPointerEvent]. No decision is made here.
+ *
  * Visuals are minimal by design (§11): a thin outline and a small marker, or nothing at all when the user hid it.
  */
 @SuppressLint("ViewConstructor") // only ever created programmatically by TriggerOverlayController
 class TriggerOverlayView(
     context: Context,
-    private val onTouch: (TriggerTouch) -> Unit,
+    private val onPointerEvent: (PointerEvent) -> Unit,
 ) : View(context) {
 
     var indicatorVisible: Boolean = true
@@ -79,16 +87,37 @@ class TriggerOverlayView(
 
     @SuppressLint("ClickableViewAccessibility") // deliberately not a clickable control; it is a game input zone
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val kind = when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> TouchKind.DOWN
-            MotionEvent.ACTION_UP -> TouchKind.UP
-            MotionEvent.ACTION_CANCEL -> TouchKind.CANCEL
-            // Extra fingers are not separate presses; ACTION_POINTER_DOWN is ignored on purpose.
-            else -> return true
-        }
-        onTouch(TriggerTouch(kind, event.rawX, event.rawY, event.eventTime))
+        onPointerEvent(event.toPointerEvent())
+        // The pointers in this stream started inside the area: they belong to the trigger. Returning false would
+        // not hand them to the game (cross-process windows never forward), it would only stop the stream.
         return true
     }
+
+    private fun MotionEvent.toPointerEvent(): PointerEvent {
+        val action = when (actionMasked) {
+            MotionEvent.ACTION_DOWN -> PointerAction.DOWN
+            MotionEvent.ACTION_POINTER_DOWN -> PointerAction.POINTER_DOWN
+            MotionEvent.ACTION_MOVE -> PointerAction.MOVE
+            MotionEvent.ACTION_POINTER_UP -> PointerAction.POINTER_UP
+            MotionEvent.ACTION_UP -> PointerAction.UP
+            else -> PointerAction.CANCEL // ACTION_CANCEL and anything unexpected end the press safely
+        }
+        // Raw coordinates are physical display pixels: the window sits at the area's origin with LAYOUT_IN_SCREEN,
+        // which is the space the tracker, the controller and dispatchGesture share.
+        val samples = List(pointerCount) { index ->
+            val id = getPointerId(index)
+            val resolved = findPointerIndex(id) // == index by construction; kept explicit so id/index never mix
+            PointerSample(id = id, index = resolved, xPx = rawXAt(resolved), yPx = rawYAt(resolved))
+        }
+        return PointerEvent(action = action, actionIndex = actionIndex, pointers = samples, atMs = eventTime)
+    }
+
+    /** Per-pointer raw coordinates exist from API 29; before that every pointer shares the window's offset. */
+    private fun MotionEvent.rawXAt(index: Int): Float =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) getRawX(index) else getX(index) + (rawX - x)
+
+    private fun MotionEvent.rawYAt(index: Int): Float =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) getRawY(index) else getY(index) + (rawY - y)
 
     private companion object {
         const val FILL_ALPHA = 40

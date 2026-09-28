@@ -74,9 +74,19 @@ data class TriggerEditorUiState(
     val receivedTaps: List<Pair<Float, Float>> = emptyList(),
     val apps: List<LauncherApps.Entry> = emptyList(),
     val loaded: Boolean = false,
+    /** Set by a refused Save: from then on every validation error is shown, including the initially blank name. */
+    val showAllErrors: Boolean = false,
 ) {
     val selectedPoint: TargetPoint? get() = config?.targetPoints?.firstOrNull { it.id == selectedPointId }
-    val canSave: Boolean get() = config != null && errors.isEmpty() && !saving
+
+    /**
+     * Save is offered as soon as the configuration exists. A greyed-out button on a brand-new trigger (blank name,
+     * no target yet) gave no hint why; instead [TriggerEditorViewModel.save] refuses with the first error and
+     * turns [showAllErrors] on so the form highlights what is missing.
+     */
+    val canSave: Boolean get() = config != null && !saving
+    val isValid: Boolean get() = config != null && errors.isEmpty()
+    val nameInvalid: Boolean get() = errors.any { it.code == ErrorCode.NAME_INVALID } && (dirty || showAllErrors)
     val canTest: Boolean
         get() = config != null && errors.none { it.code != ErrorCode.NAME_INVALID } &&
             access?.ready == true && testPhase == TestPhase.Idle
@@ -263,8 +273,15 @@ class TriggerEditorViewModel @Inject constructor(
     // ---- save / test --------------------------------------------------------------------------------------
 
     fun save() {
-        val config = _state.value.config ?: return
-        if (!_state.value.canSave) return
+        val current = _state.value
+        val config = current.config ?: return
+        if (!current.canSave) return
+        val firstError = current.errors.firstOrNull()
+        if (firstError != null) {
+            _state.update { it.copy(showAllErrors = true) }
+            _events.tryEmit(TriggerEditorEvent.Error(firstError))
+            return
+        }
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
             when (val r = repository.save(config)) {

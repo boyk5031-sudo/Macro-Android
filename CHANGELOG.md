@@ -25,3 +25,10 @@ First release. Scope per `docs/phase-0-feasibility-and-constraints.md` (MVP colu
   trigger state machine, on-screen edit mode over the game (drag area/points, add/delete/toggle, test, done),
   and a fix so injected taps whose target lies inside the zone reach the game (overlay untouchable during
   execution).
+- Trigger Areas input architecture: zone windows now set `FLAG_SPLIT_TOUCH` (a second finger is split to the
+  zone while the game holds the first); touch handling split into view (translation only) → `PointerTracker`
+  (pointer-id based DOWN/POINTER_DOWN/MOVE/POINTER_UP/UP/CANCEL) → controller; new untouchable debug read-out
+  (Settings) showing pointer id/index/coordinates/action and trigger state; the platform limitation of
+  `dispatchGesture` (cancels / is cancelled by concurrent real touches) is documented in the editor, the log and
+  `docs/phase-12-trigger-areas.md` §10a. Editor: Save is no longer greyed out on a new trigger — it explains what
+  is missing and flags the name field.

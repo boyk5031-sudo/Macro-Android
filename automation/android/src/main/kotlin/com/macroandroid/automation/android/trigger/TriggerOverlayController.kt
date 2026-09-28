@@ -6,8 +6,8 @@ import android.os.Build
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.core.content.getSystemService
+import com.macroandroid.automation.trigger.PointerEvent
 import com.macroandroid.automation.trigger.TriggerId
-import com.macroandroid.automation.trigger.TriggerTouch
 import com.macroandroid.core.common.display.DisplayGeometry
 import com.macroandroid.core.common.display.DisplayRect
 import com.macroandroid.core.common.logging.Logger
@@ -18,6 +18,15 @@ import javax.inject.Singleton
  * Adds/removes `TYPE_ACCESSIBILITY_OVERLAY` windows through the bound service's WindowManager. This window type
  * is granted to accessibility services by the system – no `SYSTEM_ALERT_WINDOW` (which the build forbids).
  * Main-thread only. One window per visible trigger; `hideAll` is idempotent so teardown can never leak a window.
+ *
+ * Window/input design (layer A vs C separation):
+ *  * a gameplay window is exactly the trigger area – never full-screen – so the system routes to it only pointers
+ *    that go DOWN inside the area; everything else goes straight to the game;
+ *  * `FLAG_SPLIT_TOUCH` is set explicitly. Raw `WindowManager.addView` windows do not get it automatically (only
+ *    activity windows do, via PhoneWindow), and without it the dispatcher does not split a new finger to this
+ *    window while the game already holds one – the trigger could not be pressed during a joystick drag at all;
+ *  * `FLAG_NOT_TOUCH_MODAL` + `FLAG_NOT_FOCUSABLE`: no outside-touch capture, no key focus stolen from the game;
+ *  * the debug HUD is a separate `FLAG_NOT_TOUCHABLE` window: it renders, it is never an input target.
  */
 @Singleton
 class TriggerOverlayController @Inject constructor(private val logger: Logger) {
@@ -26,12 +35,16 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
 
     private class EditorEntry(val view: TriggerEditOverlayView, val params: WindowManager.LayoutParams)
 
+    private class HudEntry(val view: TriggerDebugHudView, val params: WindowManager.LayoutParams)
+
     private val entries = LinkedHashMap<TriggerId, Entry>()
     private var editor: EditorEntry? = null
+    private var hud: HudEntry? = null
     private var windowManager: WindowManager? = null
 
     val visibleIds: Set<TriggerId> get() = entries.keys.toSet()
     val editorView: TriggerEditOverlayView? get() = editor?.view
+    val debugHudVisible: Boolean get() = hud != null
 
     /** Shows or repositions the overlay for [id]. Returns false when the system refused the window. */
     fun show(
@@ -40,7 +53,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
         bounds: DisplayRect,
         label: String,
         indicatorVisible: Boolean,
-        onTouch: (TriggerTouch) -> Unit,
+        onPointerEvent: (PointerEvent) -> Unit,
     ): Boolean {
         val wm = windowManager ?: service.getSystemService<WindowManager>()?.also { windowManager = it } ?: return false
         val existing = entries[id]
@@ -56,7 +69,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
             }
             return true
         }
-        val view = TriggerOverlayView(service, onTouch).apply {
+        val view = TriggerOverlayView(service, onPointerEvent).apply {
             this.label = label
             this.indicatorVisible = indicatorVisible
         }
@@ -124,6 +137,42 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
             .onFailure { logger.w(TAG, "editor removeView failed", it) }
     }
 
+    /** Debug HUD: top-start corner, untouchable, sized to its text. Idempotent. */
+    fun showDebugHud(service: AccessibilityService, geometry: DisplayGeometry): Boolean {
+        if (hud != null) return true
+        val wm = windowManager ?: service.getSystemService<WindowManager>()?.also { windowManager = it } ?: return false
+        val view = TriggerDebugHudView(service)
+        val params = newParams().apply {
+            x = HUD_MARGIN_PX
+            y = geometry.heightPx / HUD_TOP_DIVISOR
+            width = WindowManager.LayoutParams.WRAP_CONTENT
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            flags = flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        }
+        return try {
+            wm.addView(view, params)
+            hud = HudEntry(view, params)
+            true
+        } catch (e: WindowManager.BadTokenException) {
+            logger.w(TAG, "hud addView refused", e)
+            false
+        } catch (e: IllegalStateException) {
+            logger.w(TAG, "hud addView failed", e)
+            false
+        }
+    }
+
+    fun updateDebugHud(lines: List<String>) {
+        hud?.view?.lines = lines
+    }
+
+    fun hideDebugHud() {
+        val entry = hud ?: return
+        hud = null
+        runCatching { windowManager?.removeViewImmediate(entry.view) }
+            .onFailure { logger.w(TAG, "hud removeView failed", it) }
+    }
+
     /** Returns true when the flag actually changed. */
     private fun WindowManager.LayoutParams.setNotTouchable(notTouchable: Boolean): Boolean {
         val before = flags
@@ -144,6 +193,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
     fun hideAll() {
         entries.keys.toList().forEach(::hide)
         hideEditor()
+        hideDebugHud()
         windowManager = null
     }
 
@@ -161,6 +211,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
         WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_SPLIT_TOUCH or
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
         PixelFormat.TRANSLUCENT,
@@ -175,5 +226,7 @@ class TriggerOverlayController @Inject constructor(private val logger: Logger) {
 
     private companion object {
         const val TAG = "TriggerOverlay"
+        const val HUD_MARGIN_PX = 16
+        const val HUD_TOP_DIVISOR = 8
     }
 }

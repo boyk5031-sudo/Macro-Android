@@ -11,8 +11,12 @@ import kotlinx.coroutines.launch
 
 enum class TouchKind { DOWN, UP, CANCEL }
 
-/** A raw touch on the overlay, already in physical display pixels. */
-data class TriggerTouch(val kind: TouchKind, val xPx: Float, val yPx: Float, val atMs: Long)
+/**
+ * A press or release of the trigger, already in physical display pixels. Produced by [PointerTracker] from the
+ * trigger window's own pointer stream: [pointerId] is the stable id of the activating finger, so a release always
+ * refers to the same finger as the press even when other fingers come and go in between.
+ */
+data class TriggerTouch(val kind: TouchKind, val xPx: Float, val yPx: Float, val atMs: Long, val pointerId: Int = 0)
 
 sealed interface TouchOutcome {
     /** Trigger fired; [plan] is being executed asynchronously. */
@@ -81,7 +85,7 @@ class TriggerController(
             }
             TouchKind.DOWN -> Unit
         }
-        // MOVE events never reach here: the overlay forwards DOWN/UP/CANCEL only (§11).
+        // MOVE events never reach here: PointerTracker turns the raw stream into press/release of ONE pointer id.
         if (!TriggerHitTester.hit(config.triggerArea, geometry, touch.xPx, touch.yPx)) return TouchOutcome.Ignored
         when (val decision = gate.onDown(touch.atMs)) {
             is GateDecision.Reject -> return TouchOutcome.Rejected(
@@ -123,6 +127,7 @@ class TriggerController(
             buildString {
                 append("Trigger detected\nTrigger ID: ").append(config.id)
                 append("\nTouch: ").append(touch.xPx.toInt()).append(',').append(touch.yPx.toInt())
+                append(" (pointer id ").append(touch.pointerId).append(')')
                 append("\nTrigger bounds: ").append(bounds.left).append(',').append(bounds.top).append(',')
                 append(bounds.width).append(',').append(bounds.height)
                 append("\nReaction delay: ").append(plan.reactionDelayMs).append(" ms")
@@ -135,7 +140,11 @@ class TriggerController(
                 append("\nCooldown: ").append(config.cooldownMs).append(" ms")
                 append("\nRepeat: ").append(config.repeatMode).append(" ×").append(plan.repeatCount)
                 append(" every ").append(plan.repeatDelayMs).append(" ms")
-                append("\nInjection: ").append(adapter.capability().let { if (it.available) "available" else "${it.reason}" })
+                val capability = adapter.capability()
+                append("\nInjection: ").append(if (capability.available) "available" else "${capability.reason}")
+                if (capability.available && !capability.coexistsWithUserTouch) {
+                    append(" (platform: injecting cancels a finger already on the game, and a real touch cancels the injection)")
+                }
                 if (plan.compatibility != DisplayCompatibility.EXACT) append("\nDisplay: ").append(plan.compatibility)
             },
         )

@@ -46,6 +46,7 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setLastReconcileAt(at: Long) = edit { it[Keys.LAST_RECONCILE] = at }
     suspend fun setNotificationsRationaleShown(shown: Boolean) = edit { it[Keys.NOTIF_RATIONALE] = shown }
     suspend fun setShowTriggerIndicator(show: Boolean) = edit { it[Keys.TRIGGER_INDICATOR] = show }
+    suspend fun setShowTriggerDebugHud(show: Boolean) = edit { it[Keys.TRIGGER_DEBUG_HUD] = show }
 
     /** Wipes everything (Settings → Delete all data). */
     suspend fun clear() = edit { it.clear() }
@@ -74,6 +75,7 @@ class UserPreferencesRepository @Inject constructor(
         lastReconcileAt = this[Keys.LAST_RECONCILE],
         notificationsRationaleShown = this[Keys.NOTIF_RATIONALE] ?: false,
         showTriggerIndicator = this[Keys.TRIGGER_INDICATOR] ?: true,
+        showTriggerDebugHud = this[Keys.TRIGGER_DEBUG_HUD] ?: false,
     )
 
     private object Keys {
@@ -95,5 +97,6 @@ class UserPreferencesRepository @Inject constructor(
         val LAST_RECONCILE = longPreferencesKey("last_reconcile_at")
         val NOTIF_RATIONALE = booleanPreferencesKey("notifications_rationale_shown")
         val TRIGGER_INDICATOR = booleanPreferencesKey("trigger_indicator_visible")
+        val TRIGGER_DEBUG_HUD = booleanPreferencesKey("trigger_debug_hud")
     }
 }

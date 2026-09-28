@@ -157,6 +157,12 @@ private fun SettingsContent(
             p.showTriggerIndicator,
             viewModel::setShowTriggerIndicator,
         )
+        SwitchRow(
+            R.string.set_trigger_debug_hud,
+            R.string.set_trigger_debug_hud_help,
+            p.showTriggerDebugHud,
+            viewModel::setShowTriggerDebugHud,
+        )
         SwitchRow(R.string.set_verbose, R.string.set_verbose_help, p.verboseLogging, viewModel::setVerboseLogging)
         HorizontalDivider()
 

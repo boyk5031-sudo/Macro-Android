@@ -24,8 +24,11 @@ import kotlin.coroutines.resume
  * dispatches as genuine simultaneous pointers – that is what makes [ExecutionMode.MULTI_TOUCH] real rather than
  * fast sequential taps.
  *
- * Limits (documented in docs/phase-12-trigger-areas.md §9): at most `GestureDescription.getMaxStrokeCount()`
- * strokes, and any injected gesture is cancelled by the system if a *new* user touch or another gesture starts.
+ * Limits (documented in docs/phase-12-trigger-areas.md §9 and §12): at most `GestureDescription.getMaxStrokeCount()`
+ * strokes, and – by platform design, inside system_server's `MotionEventInjector` – (a) starting an injected
+ * gesture sends ACTION_CANCEL to any real touch gesture in progress, and (b) any real touch event that arrives
+ * while an injected gesture is running cancels the injection (`onCancelled`). Injected contacts therefore cannot
+ * coexist with a finger the user already has on the game; [InjectionCapability.coexistsWithUserTouch] is false.
  * The system lifts every stroke it started when it cancels, so no pointer can stay stuck.
  */
 @Singleton
@@ -42,6 +45,7 @@ class AccessibilityInputInjectionAdapter @Inject constructor(
             available = true,
             maxSimultaneousContacts = GestureDescription.getMaxStrokeCount().coerceAtLeast(1),
             reason = null,
+            coexistsWithUserTouch = false,
         )
     }
 
@@ -83,6 +87,9 @@ class AccessibilityInputInjectionAdapter @Inject constructor(
                 }
 
                 override fun onCancelled(gestureDescription: GestureDescription?) {
+                    // Almost always: a real touch (e.g. the user's joystick finger moving) arrived during the
+                    // injection. Platform behaviour of dispatchGesture, not a fault of the plan.
+                    logger.d(TAG, "gesture cancelled by the system (real touch during injection)")
                     if (cont.isActive) cont.resume(AppResult.err(ErrorCode.GESTURE_CANCELLED))
                 }
             }

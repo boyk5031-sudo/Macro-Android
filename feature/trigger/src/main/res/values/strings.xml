@@ -73,6 +73,8 @@
     <string name="trg_error_for_target">Target %1$s: %2$s</string>
     <string name="trg_section_general">General</string>
     <string name="trg_name">Name</string>
+    <string name="trg_name_required">Enter a name to save this trigger.</string>
+    <string name="trg_input_note">Injected taps use the Android accessibility gesture API. A tap on the trigger area itself never touches the game, but while a target is being tapped a finger already on the game is cancelled by Android, and moving that finger cancels the injected tap. Lift other fingers for the moment of the target taps.</string>
     <string name="trg_bind_app">Game / app</string>
     <string name="trg_bind_app_help">Bound triggers appear automatically when that app is in front and never over other apps.</string>
     <string name="trg_any_app">Any app (arm manually from the list)</string>

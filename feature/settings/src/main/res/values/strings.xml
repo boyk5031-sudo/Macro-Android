@@ -19,6 +19,8 @@
     <string name="set_keep_screen_on_help">Only while this app is in the foreground</string>
     <string name="set_trigger_indicator">Show trigger area outline in games</string>
     <string name="set_trigger_indicator_help">Off makes active trigger areas invisible; they still react to your taps. Each trigger can override this.</string>
+    <string name="set_trigger_debug_hud">Trigger debug read-out</string>
+    <string name="set_trigger_debug_hud_help">Shows pointer IDs, indices, coordinates, touch actions and the trigger state of every active trigger area on screen. Untouchable; for verifying that game touches and triggers are handled independently.</string>
     <string name="set_verbose">Verbose logging</string>
     <string name="set_verbose_help">Store debug-level entries in execution logs. Log text may include on-screen labels.</string>
     <string name="set_section_retention">History</string>

@@ -188,6 +188,7 @@ private fun EditorContent(
         item { GeneralSection(state, config, viewModel) }
         item { AreaSection(config, viewModel) }
         item { ExecutionSection(config, viewModel) }
+        item { InputMechanismNote() }
         item { SectionTitle(stringResource(R.string.trg_points_title, config.targetPoints.size)) }
         itemsIndexed(config.targetPoints, key = { _, p -> p.id.value }) { index, point ->
             PointRow(index, point, config, state.selectedPointId == point.id, state.canTestPoint, viewModel)
@@ -235,6 +236,17 @@ private fun Toolbar(state: TriggerEditorUiState, viewModel: TriggerEditorViewMod
     }
 }
 
+/** Honest statement of the platform limitation of the injection mechanism (docs/phase-12-trigger-areas.md §12). */
+@Composable
+private fun InputMechanismNote() {
+    Text(
+        stringResource(R.string.trg_input_note),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+    )
+}
+
 @Composable
 private fun CompatibilityNote(compatibility: DisplayCompatibility?) {
     val text = when (compatibility) {
@@ -250,7 +262,7 @@ private fun CompatibilityNote(compatibility: DisplayCompatibility?) {
 
 @Composable
 private fun ErrorsCard(state: TriggerEditorUiState) {
-    val errors = state.errors.filter { it.code != ErrorCode.NAME_INVALID || state.dirty }
+    val errors = state.errors.filter { it.code != ErrorCode.NAME_INVALID || state.dirty || state.showAllErrors }
     if (errors.isEmpty()) return
     Card(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
@@ -284,6 +296,12 @@ private fun GeneralSection(state: TriggerEditorUiState, config: TriggerConfigura
             onValueChange = viewModel::setName,
             label = { Text(stringResource(R.string.trg_name)) },
             singleLine = true,
+            isError = state.nameInvalid,
+            supportingText = if (state.nameInvalid) {
+                { Text(stringResource(R.string.trg_name_required)) }
+            } else {
+                null
+            },
             modifier = Modifier.fillMaxWidth(),
         )
         AppBindingPicker(state, config.packageName, viewModel::setPackage)

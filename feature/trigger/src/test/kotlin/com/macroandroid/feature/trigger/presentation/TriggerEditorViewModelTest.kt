@@ -67,7 +67,7 @@ class TriggerEditorViewModelTest {
     }
 
     @Test
-    fun `new trigger starts with a default area, no points, and cannot be saved without a name`() = runTest(dispatcher) {
+    fun `new trigger starts with a default area, no points, and Save explains what is missing`() = runTest(dispatcher) {
         val vm = newVm()
         advanceUntilIdle()
         val s = vm.uiState.value
@@ -76,7 +76,18 @@ class TriggerEditorViewModelTest {
         assertThat(config.targetPoints).isEmpty()
         assertThat(config.authoredDisplay.widthPx).isEqualTo(geometry.widthPx)
         assertThat(s.errors.map { it.code }).contains(ErrorCode.NAME_INVALID)
-        assertThat(s.canSave).isFalse()
+        // Save is offered (not greyed out) but refuses with the first error and switches all errors on.
+        assertThat(s.canSave).isTrue()
+        assertThat(s.isValid).isFalse()
+        assertThat(s.nameInvalid).isFalse() // untouched form: no red field yet
+        vm.events.test {
+            vm.save()
+            advanceUntilIdle()
+            assertThat((awaitItem() as TriggerEditorEvent.Error).error.code).isEqualTo(ErrorCode.NAME_INVALID)
+        }
+        coVerify(exactly = 0) { repository.save(any()) }
+        assertThat(vm.uiState.value.showAllErrors).isTrue()
+        assertThat(vm.uiState.value.nameInvalid).isTrue()
         assertThat(s.apps.map { it.packageName }).containsExactly("com.game")
     }
 
@@ -183,12 +194,13 @@ class TriggerEditorViewModelTest {
         assertThat(vm.uiState.value.config!!.repeatCount).isEqualTo(TriggerLimits.MAX_REPEAT)
         vm.setAreaPx(xPx = null, yPx = null, wPx = 100_000, hPx = null)
         assertThat(vm.uiState.value.errors.map { it.code }).contains(ErrorCode.TRIGGER_AREA_INVALID)
-        assertThat(vm.uiState.value.canSave).isFalse()
+        assertThat(vm.uiState.value.isValid).isFalse()
         vm.setAreaPx(xPx = null, yPx = null, wPx = 200, hPx = null)
         assertThat(vm.uiState.value.errors).isEmpty()
         vm.setName("   ")
         assertThat(vm.uiState.value.errors.map { it.code }).contains(ErrorCode.NAME_INVALID)
-        assertThat(vm.uiState.value.canSave).isFalse()
+        assertThat(vm.uiState.value.isValid).isFalse()
+        assertThat(vm.uiState.value.nameInvalid).isTrue() // dirty form: the field is flagged immediately
     }
 
     @Test
